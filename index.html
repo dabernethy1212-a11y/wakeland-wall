@@ -255,6 +255,7 @@ tr:hover td{background:#FAFAF7;}
     <button class="nav-btn active" onclick="switchView('inventory')">Inventory</button>
     <button class="nav-btn" onclick="switchView('singles')">⭐ Big Singles</button>
     <button class="nav-btn" onclick="switchView('sales')">Sales log</button>
+    <button class="nav-btn" onclick="switchView('breaks')">📦 Breaks</button>
     <button class="nav-btn" onclick="switchView('ai')">AI pricing</button>
   </div>
   <div style="display:flex;align-items:center;gap:12px;">
@@ -386,6 +387,31 @@ tr:hover td{background:#FAFAF7;}
     </div>
   </div>
 
+  <!-- ══════════ BREAKS ══════════ -->
+  <div id="view-breaks" class="view">
+    <div class="metrics-row" id="breaks-metrics"></div>
+    <div class="sh">
+      <div class="st">Break log</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <select id="breaks-month-filter" onchange="renderBreaks()" style="padding:7px 12px;font-size:13px;font-family:'DM Sans',sans-serif;border:1px solid var(--border-s);border-radius:var(--r);background:var(--surface);color:var(--text);outline:none;cursor:pointer;">
+          <option value="all">All time</option>
+        </select>
+        <button class="btn sm" onclick="selectAllBreaks()" id="select-all-breaks-btn">Select all</button>
+        <button class="btn sm danger" id="delete-breaks-btn" onclick="deleteSelectedBreaks()" style="display:none;">Delete selected</button>
+      </div>
+    </div>
+    <div class="tw">
+      <table>
+        <thead><tr>
+          <th style="width:36px;"><input type="checkbox" id="select-all-breaks-cb" onchange="toggleSelectAllBreaks(this)" style="cursor:pointer;"></th>
+          <th>Date</th><th>Product</th><th>Brand</th><th>Boxes taken</th><th>Cost/box</th><th>Total cost</th><th>Notes</th>
+        </tr></thead>
+        <tbody id="breaks-body"></tbody>
+      </table>
+      <div id="empty-breaks" class="empty" style="display:none;"><div class="icon">📦</div><p>No breaks logged yet. Use the Break button in inventory to log product taken for breaks.</p></div>
+    </div>
+  </div>
+
   <!-- ══════════ AI PRICING ══════════ -->
   <div id="view-ai" class="view">
     <div class="sh"><div class="st">AI market price lookup</div></div>
@@ -457,6 +483,23 @@ tr:hover td{background:#FAFAF7;}
     <div class="mf">
       <button class="btn" onclick="closeModal()">Cancel</button>
       <button class="btn primary" onclick="saveProduct()">Save product</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BREAK MODAL ══ -->
+<div class="mo" id="break-modal" onclick="if(event.target===this)closeBreakModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title" id="break-title">Log break</div>
+    <div style="background:var(--amber-bg);border-radius:var(--r);padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--amber-t);">
+      📦 Boxes logged as breaks are removed from available inventory and tracked separately in the Breaks tab.
+    </div>
+    <div class="fr"><label>Boxes taken for break</label><input type="number" id="break-qty" value="1" min="1" oninput="updateBreakPreview()"></div>
+    <div class="fr"><label>Notes (optional)</label><input type="text" id="break-notes" placeholder="e.g. Friday night break, online break"></div>
+    <div class="preview-box" id="break-preview" style="display:block;"></div>
+    <div class="mf">
+      <button class="btn" onclick="closeBreakModal()">Cancel</button>
+      <button class="btn primary" onclick="confirmBreak()" style="background:#7A5400;border-color:#7A5400;color:#FFF8E1;">Log break</button>
     </div>
   </div>
 </div>
@@ -601,14 +644,14 @@ function cors(){return{'Access-Control-Allow-Origin':'*','Access-Control-Allow-M
 <script>
 // ── STORAGE ───────────────────────────────────────────────────
 const SK='ww_crm_v4';
-let products=[],sales=[],singles=[],singlesFilter='all',editingSingleId=null,sellingId=null,editingId=null,purchaseType='case',sellingSSId=null;
+let products=[],sales=[],singles=[],breaks=[],singlesFilter='all',editingSingleId=null,sellingId=null,editingId=null,purchaseType='case',sellingSSId=null,breakingId=null;
 
 function save(){
-  try{localStorage.setItem(SK,JSON.stringify({products,sales,singles}));}catch(e){}
+  try{localStorage.setItem(SK,JSON.stringify({products,sales,singles,breaks}));}catch(e){}
   setSyncState('saved');
 }
 function load(){
-  try{const d=JSON.parse(localStorage.getItem(SK)||'{}');products=d.products||[];sales=d.sales||[];singles=d.singles||[];}catch(e){}
+  try{const d=JSON.parse(localStorage.getItem(SK)||'{}');products=d.products||[];sales=d.sales||[];singles=d.singles||[];breaks=d.breaks||[];}catch(e){}
   if(!products.length)seed();
 }
 function seed(){
@@ -653,9 +696,10 @@ function suggestSalePrice(cost, comp){
 
 // ── VIEW SWITCH ───────────────────────────────────────────────
 function switchView(v){
-  ['inventory','singles','sales','ai'].forEach(n=>document.getElementById('view-'+n).classList.toggle('active',n===v));
-  document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',['inventory','singles','sales','ai'][i]===v));
+  ['inventory','singles','sales','breaks','ai'].forEach(n=>document.getElementById('view-'+n).classList.toggle('active',n===v));
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',['inventory','singles','sales','breaks','ai'][i]===v));
   if(v==='sales')renderSales();
+  if(v==='breaks')renderBreaks();
   if(v==='ai')renderQL();
   if(v==='singles'){renderSinglesMetrics();renderSingles();}
 }
@@ -724,6 +768,7 @@ function renderTable(){
       <td>${sBadge(p)}</td>
       <td><div class="ar">
         <button class="btn sm primary" onclick="openSellModal(${p.id})">Sell</button>
+        <button class="btn sm" style="background:var(--amber-bg);color:var(--amber-t);border-color:var(--amber-t);" onclick="openBreakModal(${p.id})">Break</button>
         <button class="btn sm" onclick="openEditModal(${p.id})">Edit</button>
         <button class="btn sm danger" onclick="delProduct(${p.id})">✕</button>
       </div></td>
@@ -1098,6 +1143,134 @@ function confirmSale(){
   save();closeSellModal();renderAll();showToast(`Sale recorded: ${qty} box${qty>1?'es':''} · ${fm(rev)}`);
 }
 
+// ── BREAK MODAL ───────────────────────────────────────────────
+function openBreakModal(id){
+  breakingId=id;
+  const p=products.find(x=>x.id===id);
+  document.getElementById('break-title').textContent='Log break — '+p.name;
+  document.getElementById('break-qty').value=1;
+  document.getElementById('break-notes').value='';
+  updateBreakPreview();
+  document.getElementById('break-modal').classList.add('open');
+}
+function closeBreakModal(){document.getElementById('break-modal').classList.remove('open');}
+function updateBreakPreview(){
+  const p=products.find(x=>x.id===breakingId);if(!p)return;
+  const qty=parseInt(document.getElementById('break-qty').value)||0;
+  const totalCost=qty*cpb(p);
+  const prev=document.getElementById('break-preview');
+  prev.style.display='block';
+  prev.style.color='var(--amber-t)';
+  prev.innerHTML=`Boxes taken: <strong>${qty}</strong> &nbsp;·&nbsp; Cost basis: <strong>${fm(totalCost)}</strong> &nbsp;·&nbsp; Available after: <strong>${Math.max(0,avail(p)-qty)}</strong>`;
+}
+function confirmBreak(){
+  const p=products.find(x=>x.id===breakingId);
+  const qty=parseInt(document.getElementById('break-qty').value)||0;
+  const notes=document.getElementById('break-notes').value.trim();
+  if(!qty){showToast('Enter number of boxes.');return;}
+  if(qty>avail(p)){showToast(`Only ${avail(p)} box${avail(p)!==1?'es':''} available.`);return;}
+  p.soldBoxes=(p.soldBoxes||0)+qty;
+  const totalCost=qty*cpb(p);
+  breaks.push({id:Date.now(),date:Date.now(),productName:p.name,productId:p.id,brand:p.brand,qty,costPerBox:cpb(p),totalCost,notes});
+  save();closeBreakModal();renderAll();
+  showToast(`Break logged: ${qty} box${qty>1?'es':''} · ${fm(totalCost)} cost`);
+}
+
+// ── BREAKS LOG ────────────────────────────────────────────────
+function populateBreaksMonthFilter(){
+  const sel=document.getElementById('breaks-month-filter');
+  if(!sel)return;
+  const current=sel.value;
+  const months=[...new Set(breaks.map(b=>{
+    const d=new Date(b.date);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  }))].sort((a,b)=>b.localeCompare(a));
+  sel.innerHTML='<option value="all">All time</option>'+months.map(m=>{
+    const [yr,mo]=m.split('-');
+    const label=new Date(yr,mo-1,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+    return `<option value="${m}" ${current===m?'selected':''}>${label}</option>`;
+  }).join('');
+}
+function getFilteredBreaks(){
+  const sel=document.getElementById('breaks-month-filter');
+  if(!sel||sel.value==='all')return breaks;
+  const v=sel.value;
+  return breaks.filter(b=>{
+    const d=new Date(b.date);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`===v;
+  });
+}
+function toggleSelectAllBreaks(cb){
+  document.querySelectorAll('.break-cb').forEach(c=>c.checked=cb.checked);
+  updateBreaksDeleteBtn();
+}
+function selectAllBreaks(){
+  const cbs=document.querySelectorAll('.break-cb');
+  const allChecked=[...cbs].every(c=>c.checked);
+  cbs.forEach(c=>c.checked=!allChecked);
+  const cb=document.getElementById('select-all-breaks-cb');
+  if(cb)cb.checked=!allChecked;
+  updateBreaksDeleteBtn();
+}
+function updateBreaksDeleteBtn(){
+  const checked=document.querySelectorAll('.break-cb:checked').length;
+  const btn=document.getElementById('delete-breaks-btn');
+  if(btn)btn.style.display=checked>0?'':'none';
+  if(btn&&checked>0)btn.textContent=`Delete selected (${checked})`;
+}
+function deleteSelectedBreaks(){
+  const ids=[...document.querySelectorAll('.break-cb:checked')].map(c=>Number(c.dataset.id));
+  if(!ids.length)return;
+  showConfirm(
+    `Delete ${ids.length} break${ids.length>1?'s':''}?`,
+    'This will remove the selected break entries and restore boxes to inventory.',
+    ()=>{
+      ids.forEach(id=>{
+        const b=breaks.find(x=>x.id===id);
+        if(b){
+          const prod=products.find(p=>p.id===b.productId);
+          if(prod)prod.soldBoxes=Math.max(0,(prod.soldBoxes||0)-b.qty);
+        }
+      });
+      breaks=breaks.filter(b=>!ids.includes(b.id));
+      save();renderAll();renderBreaks();
+      showToast(`${ids.length} break${ids.length>1?'s':''} deleted.`);
+    }
+  );
+}
+function renderBreaks(){
+  populateBreaksMonthFilter();
+  const filtered=getFilteredBreaks();
+  const totalBoxes=filtered.reduce((s,b)=>s+b.qty,0);
+  const totalCost=filtered.reduce((s,b)=>s+b.totalCost,0);
+  const sel=document.getElementById('breaks-month-filter');
+  const isFiltered=sel&&sel.value!=='all';
+  document.getElementById('breaks-metrics').innerHTML=`
+    <div class="mc"><div class="mc-label">${isFiltered?'Month breaks':'Total breaks'}</div><div class="mc-value gold">${filtered.length}</div><div class="mc-sub">${totalBoxes} boxes total</div></div>
+    <div class="mc"><div class="mc-label">${isFiltered?'Month cost basis':'Total cost basis'}</div><div class="mc-value amber">${fm(totalCost)}</div><div class="mc-sub">Product taken to break</div></div>
+    <div class="mc"><div class="mc-label">Avg cost per break</div><div class="mc-value">${filtered.length?fm(totalCost/filtered.length):'$0'}</div></div>
+    <div class="mc"><div class="mc-label">Boxes broken</div><div class="mc-value">${totalBoxes}</div><div class="mc-sub">${filtered.length} sessions</div></div>`;
+  const body=document.getElementById('breaks-body'),empty=document.getElementById('empty-breaks');
+  const selAllCb=document.getElementById('select-all-breaks-cb');
+  if(selAllCb)selAllCb.checked=false;
+  document.getElementById('delete-breaks-btn').style.display='none';
+  if(!filtered.length){body.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  body.innerHTML=[...filtered].sort((a,b)=>b.date-a.date).map(b=>{
+    const d=new Date(b.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    return `<tr>
+      <td><input type="checkbox" class="break-cb" data-id="${b.id}" onchange="updateBreaksDeleteBtn()" style="cursor:pointer;"></td>
+      <td style="color:var(--text2);font-size:12px;">${d}</td>
+      <td style="font-weight:600;">${b.productName}</td>
+      <td><span class="badge ${bCls(b.brand)}">${b.brand}</span></td>
+      <td style="text-align:center;font-weight:600;">${b.qty}</td>
+      <td class="mono">${fmd(b.costPerBox)}</td>
+      <td class="mono amber" style="font-weight:600;color:var(--amber-t);">${fm(b.totalCost)}</td>
+      <td style="color:var(--text2);font-size:12px;">${b.notes||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
 // ── AI BOX PRICING ────────────────────────────────────────────
 function renderQL(){
   const el=document.getElementById('ai-quick-lookup');
@@ -1292,7 +1465,7 @@ function runConfirm() { const cb = _confirmCb; closeConfirm(); if(cb) cb(); }
 // ── ESC TO CLOSE ─────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
-  ['modal','sell-modal','single-modal','sell-single-modal','confirm-modal','apikey-modal'].forEach(id => {
+  ['modal','sell-modal','single-modal','sell-single-modal','confirm-modal','apikey-modal','break-modal'].forEach(id => {
     document.getElementById(id).classList.remove('open');
   });
   _confirmCb = null;
