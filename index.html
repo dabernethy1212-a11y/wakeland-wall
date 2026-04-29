@@ -257,9 +257,12 @@ tr:hover td{background:#FAFAF7;}
     <button class="nav-btn" onclick="switchView('sales')">Sales log</button>
     <button class="nav-btn" onclick="switchView('ai')">AI pricing</button>
   </div>
-  <div class="sync-pill">
-    <div class="sync-dot" id="sync-dot"></div>
-    <span id="sync-label">Saved</span>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <button onclick="promptApiKey()" id="api-key-btn" style="padding:5px 11px;font-size:11px;font-family:'DM Sans',sans-serif;font-weight:500;border:1px solid rgba(255,255,255,.2);border-radius:6px;cursor:pointer;background:transparent;color:rgba(255,255,255,.5);transition:all .15s;" title="Set up AI pricing search">🔑 AI setup</button>
+    <div class="sync-pill">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="sync-label">Saved</span>
+    </div>
   </div>
 </div>
 
@@ -366,14 +369,17 @@ tr:hover td{background:#FAFAF7;}
     <div class="sales-summary" id="sales-summary"></div>
     <div class="sh">
       <div class="st">Transaction history</div>
-      <button class="btn" onclick="openRefreshModal()">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/><path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/></svg>
-        Refresh
-      </button>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <select id="sales-month-filter" onchange="renderSales()" style="padding:7px 12px;font-size:13px;font-family:'DM Sans',sans-serif;border:1px solid var(--border-s);border-radius:var(--r);background:var(--surface);color:var(--text);outline:none;cursor:pointer;">
+          <option value="all">All time</option>
+        </select>
+        <button class="btn sm" onclick="selectAllSales()" id="select-all-btn">Select all</button>
+        <button class="btn sm danger" id="delete-selected-btn" onclick="deleteSelectedSales()" style="display:none;">Delete selected</button>
+      </div>
     </div>
     <div class="tw">
       <table>
-        <thead><tr><th>Date</th><th>Type</th><th>Product / Card</th><th>Qty</th><th>Price</th><th>Revenue</th><th>Cost</th><th>Profit</th></tr></thead>
+        <thead><tr><th style="width:36px;"><input type="checkbox" id="select-all-cb" onchange="toggleSelectAll(this)" style="cursor:pointer;"></th><th>Date</th><th>Type</th><th>Product / Card</th><th>Qty</th><th>Price</th><th>Revenue</th><th>Cost</th><th>Profit</th></tr></thead>
         <tbody id="sales-body"></tbody>
       </table>
       <div id="empty-sales" class="empty" style="display:none;"><div class="icon">🧾</div><p>No sales yet.</p></div>
@@ -408,8 +414,8 @@ tr:hover td{background:#FAFAF7;}
 </div><!-- /content -->
 
 <!-- ══ ADD/EDIT PRODUCT MODAL ══ -->
-<div class="mo" id="modal">
-  <div class="modal">
+<div class="mo" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-title" id="modal-title">Add product</div>
     <div class="fr">
       <label>Purchase type</label>
@@ -456,8 +462,8 @@ tr:hover td{background:#FAFAF7;}
 </div>
 
 <!-- ══ SELL PRODUCT MODAL ══ -->
-<div class="mo" id="sell-modal">
-  <div class="modal">
+<div class="mo" id="sell-modal" onclick="if(event.target===this)closeSellModal()">
+  <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-title" id="sell-title">Record sale</div>
     <div class="fr"><label>Boxes to sell</label><input type="number" id="sell-qty" value="1" min="1" oninput="updateSellPreview()"></div>
     <div class="fr"><label>Sale price per box ($)</label><input type="number" id="sell-price" min="0" step="0.01" oninput="updateSellPreview()"></div>
@@ -470,8 +476,8 @@ tr:hover td{background:#FAFAF7;}
 </div>
 
 <!-- ══ ADD/EDIT SINGLE MODAL ══ -->
-<div class="mo" id="single-modal">
-  <div class="modal">
+<div class="mo" id="single-modal" onclick="if(event.target===this)closeSingleModal()">
+  <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-title" id="single-modal-title">Add big single</div>
     <div class="fg">
       <div class="fr"><label>Player name</label><input type="text" id="s-player" placeholder="e.g. Shohei Ohtani"></div>
@@ -520,8 +526,8 @@ tr:hover td{background:#FAFAF7;}
 </div>
 
 <!-- ══ SELL SINGLE MODAL ══ -->
-<div class="mo" id="sell-single-modal">
-  <div class="modal">
+<div class="mo" id="sell-single-modal" onclick="if(event.target===this)closeSSModal()">
+  <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-title" id="sell-single-title">Record single sale</div>
     <div class="fr"><label>Actual sale price ($)</label><input type="number" id="ss-price" min="0" step="0.01" oninput="updateSSPreview()"></div>
     <div class="preview-box" id="ss-preview" style="display:block;"></div>
@@ -532,18 +538,60 @@ tr:hover td{background:#FAFAF7;}
   </div>
 </div>
 
-<!-- ══ REFRESH PASSWORD MODAL ══ -->
-<div class="mo" id="refresh-pw-modal">
-  <div class="modal" style="width:360px;">
-    <div class="modal-title">Refresh sales log</div>
+<!-- ══ API KEY MODAL ══ -->
+<div class="mo" id="apikey-modal" onclick="if(event.target===this)closeApiKey()">
+  <div class="modal" onclick="event.stopPropagation()" style="width:480px;max-width:95vw;">
+    <div class="modal-title">Set up AI search</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6;">AI pricing and trend search needs a one-time setup. Because browsers block direct API calls from hosted websites, you need a free Cloudflare Worker proxy. It takes about 3 minutes.</p>
+
+    <div style="background:var(--surface2);border-radius:var(--r);padding:14px 16px;margin-bottom:16px;font-size:12px;line-height:1.8;color:var(--text);">
+      <strong style="font-size:13px;">Quick setup (free):</strong><br>
+      1. Go to <strong>workers.cloudflare.com</strong> → sign up free<br>
+      2. Click <strong>Create Worker</strong> → paste the code below → Deploy<br>
+      3. Copy your worker URL (e.g. <em>my-worker.username.workers.dev</em>)<br>
+      4. Paste it in the field below and save
+    </div>
+
+    <div style="background:#1C1B18;border-radius:var(--r);padding:12px 14px;margin-bottom:16px;font-size:11px;font-family:'DM Mono',monospace;color:#B8CEFF;line-height:1.7;overflow-x:auto;white-space:pre;">export default {
+  async fetch(req) {
+    if (req.method==='OPTIONS') return new Response(null,{headers:cors()});
+    const body = await req.text();
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'anthropic-version':'2023-06-01',
+        'x-api-key':'YOUR_API_KEY_HERE'
+      },
+      body
+    });
+    const data = await res.text();
+    return new Response(data,{headers:{...cors(),'Content-Type':'application/json'}});
+  }
+};
+function cors(){return{'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST,OPTIONS','Access-Control-Allow-Headers':'*'};}</div>
+
+    <p style="font-size:11px;color:var(--text3);margin-bottom:14px;">Replace <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;">YOUR_API_KEY_HERE</code> with your key from <strong>console.anthropic.com</strong> → API Keys.</p>
+
     <div class="fr">
-      <label>Password</label>
-      <input type="password" id="refresh-pw-input" placeholder="Enter password" onkeydown="if(event.key==='Enter')confirmRefresh()">
-      <div class="hint" id="refresh-pw-error" style="color:var(--red);display:none;">Incorrect password. Try again.</div>
+      <label>Your Cloudflare Worker URL</label>
+      <input type="text" id="apikey-input" placeholder="https://my-worker.username.workers.dev" autocomplete="off">
     </div>
     <div class="mf">
-      <button class="btn" onclick="closeRefreshModal()">Cancel</button>
-      <button class="btn primary" onclick="confirmRefresh()">Refresh</button>
+      <button class="btn" onclick="closeApiKey()">Cancel</button>
+      <button class="btn primary" onclick="saveApiKey()">Save &amp; connect</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CONFIRM MODAL ══ -->
+<div class="mo" id="confirm-modal" onclick="if(event.target===this)closeConfirm()">
+  <div class="modal" onclick="event.stopPropagation()" style="width:380px;max-width:95vw;">
+    <div class="modal-title" id="confirm-title" style="font-size:16px;margin-bottom:12px;">Are you sure?</div>
+    <p id="confirm-msg" style="font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.5;"></p>
+    <div class="mf" style="margin-top:0;padding-top:16px;">
+      <button class="btn" onclick="closeConfirm()">Cancel</button>
+      <button class="btn danger" id="confirm-ok-btn" onclick="runConfirm()" style="background:var(--red-bg);border-color:var(--red);">Delete</button>
     </div>
   </div>
 </div>
@@ -555,18 +603,9 @@ tr:hover td{background:#FAFAF7;}
 const SK='ww_crm_v4';
 let products=[],sales=[],singles=[],singlesFilter='all',editingSingleId=null,sellingId=null,editingId=null,purchaseType='case',sellingSSId=null;
 
-// ── GITHUB CONFIG ─────────────────────────────────────────────
-// Create a GitHub PAT at github.com/settings/tokens (repo read/write scope).
-const GH_TOKEN  = '';          // personal access token
-const GH_OWNER  = '';          // github username / org
-const GH_REPO   = '';          // repository name
-const GH_PATH   = 'data.json'; // file path inside repo
-const REFRESH_PW= 'wakeland';  // refresh password — change this
-let ghFileSha   = null;
-
 function save(){
   try{localStorage.setItem(SK,JSON.stringify({products,sales,singles}));}catch(e){}
-  if(GH_TOKEN&&GH_OWNER&&GH_REPO){pushToGitHub();}else{setSyncState('saved');}
+  setSyncState('saved');
 }
 function load(){
   try{const d=JSON.parse(localStorage.getItem(SK)||'{}');products=d.products||[];sales=d.sales||[];singles=d.singles||[];}catch(e){}
@@ -824,11 +863,7 @@ function saveSingle(){
   save();closeSingleModal();renderSinglesMetrics();renderSingles();
   showToast(editingSingleId?'Card updated.':'Card added!');
 }
-function delSingle(id){
-  if(!confirm('Remove this card?'))return;
-  singles=singles.filter(c=>c.id!==id);
-  save();renderSinglesMetrics();renderSingles();showToast('Card removed.');
-}
+function delSingle(id){showConfirm('Remove card?','This will permanently delete this single from your inventory.',()=>{singles=singles.filter(c=>c.id!==id);save();renderSinglesMetrics();renderSingles();showToast('Card removed.');});}
 
 // ── SELL SINGLE MODAL ─────────────────────────────────────────
 function openSSModal(id){
@@ -860,22 +895,106 @@ function confirmSingleSale(){
 }
 
 // ── SALES LOG ─────────────────────────────────────────────────
+function populateMonthFilter(){
+  const sel=document.getElementById('sales-month-filter');
+  const current=sel.value;
+  // Gather unique year-months from sales
+  const months=[...new Set(sales.map(s=>{
+    const d=new Date(s.date);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  }))].sort((a,b)=>b.localeCompare(a));
+  sel.innerHTML='<option value="all">All time</option>'+months.map(m=>{
+    const [yr,mo]=m.split('-');
+    const label=new Date(yr,mo-1,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+    return `<option value="${m}" ${current===m?'selected':''}>${label}</option>`;
+  }).join('');
+}
+
+function getFilteredSales(){
+  const sel=document.getElementById('sales-month-filter');
+  if(!sel) return sales;
+  const v=sel.value;
+  if(v==='all') return sales;
+  return sales.filter(s=>{
+    const d=new Date(s.date);
+    const m=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    return m===v;
+  });
+}
+
+function toggleSelectAll(cb){
+  document.querySelectorAll('.sale-cb').forEach(c=>c.checked=cb.checked);
+  updateDeleteBtn();
+}
+
+function selectAllSales(){
+  const cbs=document.querySelectorAll('.sale-cb');
+  const allChecked=[...cbs].every(c=>c.checked);
+  cbs.forEach(c=>c.checked=!allChecked);
+  const selAll=document.getElementById('select-all-cb');
+  if(selAll) selAll.checked=!allChecked;
+  updateDeleteBtn();
+}
+
+function updateDeleteBtn(){
+  const checked=document.querySelectorAll('.sale-cb:checked').length;
+  const btn=document.getElementById('delete-selected-btn');
+  if(btn) btn.style.display=checked>0?'':'none';
+  if(btn&&checked>0) btn.textContent=`Delete selected (${checked})`;
+}
+
+function deleteSelectedSales(){
+  const ids=[...document.querySelectorAll('.sale-cb:checked')].map(c=>Number(c.dataset.id));
+  if(!ids.length) return;
+  showConfirm(
+    `Delete ${ids.length} sale${ids.length>1?'s':''}?`,
+    'This will permanently remove the selected transactions from the log.',
+    ()=>{
+      // If any deleted sale was a single, un-mark it as sold
+      ids.forEach(id=>{
+        const sale=sales.find(s=>s.id===id);
+        if(sale&&sale.type==='single'){
+          const card=singles.find(c=>c.id===sale.productId);
+          if(card){card.sold=false;card.soldPrice=null;card.soldDate=null;}
+        }
+        // Restore box inventory
+        if(sale&&sale.type==='box'){
+          const prod=products.find(p=>p.id===sale.productId);
+          if(prod) prod.soldBoxes=Math.max(0,(prod.soldBoxes||0)-sale.qty);
+        }
+      });
+      sales=sales.filter(s=>!ids.includes(s.id));
+      save();renderAll();renderSales();renderSinglesMetrics();renderSingles();
+      showToast(`${ids.length} sale${ids.length>1?'s':''} deleted.`);
+    }
+  );
+}
+
 function renderSales(){
-  const allSales=sales;
-  const tRev=allSales.reduce((s,x)=>s+x.revenue,0);
-  const tP=allSales.reduce((s,x)=>s+x.profit,0);
-  const tBoxes=allSales.filter(x=>x.type!=='single').reduce((s,x)=>s+x.qty,0);
+  populateMonthFilter();
+  const filtered=getFilteredSales();
+  const tRev=filtered.reduce((s,x)=>s+x.revenue,0);
+  const tP=filtered.reduce((s,x)=>s+x.profit,0);
+  const tBoxes=filtered.filter(x=>x.type!=='single').reduce((s,x)=>s+x.qty,0);
+  const tSingles=filtered.filter(x=>x.type==='single').length;
+  const selLabel=document.getElementById('sales-month-filter');
+  const isFiltered=selLabel&&selLabel.value!=='all';
   document.getElementById('sales-summary').innerHTML=`
-    <div class="mc"><div class="mc-label">Total revenue</div><div class="mc-value">${fm(tRev)}</div></div>
-    <div class="mc"><div class="mc-label">Total profit</div><div class="mc-value ${tP>=0?'green':'amber'}">${fm(tP)}</div></div>
-    <div class="mc"><div class="mc-label">Boxes + singles sold</div><div class="mc-value">${tBoxes} boxes / ${allSales.filter(x=>x.type==='single').length} singles</div></div>`;
+    <div class="mc"><div class="mc-label">${isFiltered?'Month revenue':'Total revenue'}</div><div class="mc-value">${fm(tRev)}</div>${isFiltered?`<div class="mc-sub">${filtered.length} transactions</div>`:''}</div>
+    <div class="mc"><div class="mc-label">${isFiltered?'Month profit':'Total profit'}</div><div class="mc-value ${tP>=0?'green':'amber'}">${fm(tP)}</div></div>
+    <div class="mc"><div class="mc-label">Boxes / singles</div><div class="mc-value">${tBoxes} boxes / ${tSingles} singles</div></div>`;
   const body=document.getElementById('sales-body'),empty=document.getElementById('empty-sales');
-  if(!allSales.length){body.innerHTML='';empty.style.display='block';return;}
+  // Reset header checkbox
+  const selAll=document.getElementById('select-all-cb');
+  if(selAll) selAll.checked=false;
+  document.getElementById('delete-selected-btn').style.display='none';
+  if(!filtered.length){body.innerHTML='';empty.style.display='block';return;}
   empty.style.display='none';
-  body.innerHTML=[...allSales].sort((a,b)=>b.date-a.date).map(s=>{
+  body.innerHTML=[...filtered].sort((a,b)=>b.date-a.date).map(s=>{
     const d=new Date(s.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     const typeBadge=s.type==='single'?'<span class="badge" style="background:var(--purple-bg);color:var(--purple-t);">Single</span>':'<span class="badge case-badge">Box</span>';
     return `<tr>
+      <td><input type="checkbox" class="sale-cb" data-id="${s.id}" onchange="updateDeleteBtn()" style="cursor:pointer;"></td>
       <td style="color:var(--text2);font-size:12px;">${d}</td>
       <td>${typeBadge}</td>
       <td style="font-weight:600;">${s.productName}</td>
@@ -934,12 +1053,15 @@ function saveProduct(){
   const sp=parseFloat(document.getElementById('f-sale').value);if(!sp){showToast('Please enter a sale price.');return;}
   let prod;
   if(purchaseType==='box'){
-    const bc=parseFloat(document.getElementById('f-box-cost').value),bq=parseFloat(document.getElementById('f-box-qty').value);
-    if(!bc||!bq){showToast('Enter box cost and quantity.');return;}
+    const bc=parseFloat(document.getElementById('f-box-cost').value);
+    const bq=parseFloat(document.getElementById('f-box-qty').value);
+    if(isNaN(bc)||bc<=0||isNaN(bq)||bq<=0){showToast('Enter box cost and quantity.');return;}
     prod={purchaseType:'box',boxCostEach:bc,boxQty:bq,bpc:1,caseCost:0,cases:0};
   } else {
-    const bpc=parseFloat(document.getElementById('f-bpc').value),cc=parseFloat(document.getElementById('f-case-cost').value),cases=parseFloat(document.getElementById('f-cases').value);
-    if(!bpc||!cc||!cases){showToast('Fill in all case fields.');return;}
+    const bpc=parseFloat(document.getElementById('f-bpc').value);
+    const cc=parseFloat(document.getElementById('f-case-cost').value);
+    const cases=parseFloat(document.getElementById('f-cases').value);
+    if(isNaN(bpc)||bpc<=0||isNaN(cc)||cc<=0||isNaN(cases)||cases<=0){showToast('Fill in all case fields.');return;}
     prod={purchaseType:'case',bpc,caseCost:cc,cases,boxCostEach:0,boxQty:0};
   }
   Object.assign(prod,{name,brand:document.getElementById('f-brand').value,sport:document.getElementById('f-sport').value,year:document.getElementById('f-year').value,salePrice:sp});
@@ -947,7 +1069,7 @@ function saveProduct(){
   else products.push({id:Date.now(),soldBoxes:0,...prod});
   save();closeModal();renderAll();showToast(editingId?'Product updated.':'Product added!');
 }
-function delProduct(id){if(!confirm('Remove this product?'))return;products=products.filter(p=>p.id!==id);save();renderAll();showToast('Product removed.');}
+function delProduct(id){showConfirm('Remove product?','This will permanently delete this product from your inventory.',()=>{products=products.filter(p=>p.id!==id);save();renderAll();showToast('Product removed.');});}
 
 // ── SELL PRODUCT MODAL ────────────────────────────────────────
 function openSellModal(id){
@@ -986,7 +1108,7 @@ function renderQL(){
       <button class="btn ai sm" onclick="qs('${(p.name+' '+p.year+' '+p.brand).replace(/'/g,"\\'")}')">Check prices</button>
     </div>`).join('');
 }
-async function runAiSearch(){const q=document.getElementById('ai-query').value.trim();if(!q){showToast('Enter a product name.');return;}await qs(q);}
+async function runAiSearch(){const q=document.getElementById('ai-query').value.trim();if(!q){showToast('Enter a product name.');return;}if(!checkKey())return;await qs(q);}
 async function qs(query){
   switchView('ai');document.getElementById('ai-query').value=query;
   const area=document.getElementById('results-area'),status=document.getElementById('results-status');
@@ -1000,7 +1122,8 @@ Respond ONLY with raw JSON (no markdown):
 {"searchedFor":"string","exactMatch":boolean,"results":[{"retailer":"string","productName":"string","price":number_or_null,"availability":"in stock"|"out of stock"|"pre-order"|"sold (eBay)","isRelated":boolean,"note":"string"}],"marketSummary":"3-4 sentences with price range, trend, demand notes, and recommended shop price","recommendedRetailPrice":number_or_null}
 Rules: price is plain number. 4-8 results. Today: ${today}.`;
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1800,tools:[{type:'web_search_20250305',name:'web_search'}],messages:[{role:'user',content:prompt}]})});
+    const res=await fetch(getEndpoint(),{method:'POST',headers:getHeaders(),body:buildBody(prompt,1800)});
+    if(!res.ok){const err=await res.text();console.error('API error:',res.status,err);summary.className='ai-summary error';summary.textContent=`API error ${res.status}. Check console for details.`;status.innerHTML='';return;}
     const data=await res.json();
     const raw=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim();
     let parsed;try{const m=raw.match(/\{[\s\S]*\}/);parsed=JSON.parse(m?m[0]:raw);}catch(e){summary.className='ai-summary error';summary.textContent='Could not parse data. Try a more specific name.';status.innerHTML='';return;}
@@ -1024,6 +1147,7 @@ Rules: price is plain number. 4-8 results. Today: ${today}.`;
 async function runTrendSearch(){
   const q=document.getElementById('trend-query').value.trim();
   if(!q){showToast('Enter a player or card to search.');return;}
+  if(!checkKey())return;
   const result=document.getElementById('trend-result');
   const status=document.getElementById('trend-status');
   const hero=document.getElementById('trend-hero');
@@ -1066,7 +1190,8 @@ Respond ONLY with raw JSON (no markdown fences):
 Include 4-8 recent sales. Today: ${today}.`;
 
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,tools:[{type:'web_search_20250305',name:'web_search'}],messages:[{role:'user',content:prompt}]})});
+    const res=await fetch(getEndpoint(),{method:'POST',headers:getHeaders(),body:buildBody(prompt,2000)});
+    if(!res.ok){const err=await res.text();console.error('API error:',res.status,err);narrative.className='ai-summary error';narrative.textContent=`API error ${res.status}. Check console for details.`;status.innerHTML='';return;}
     const data=await res.json();
     const raw=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim();
     let p;
@@ -1115,88 +1240,67 @@ Include 4-8 recent sales. Today: ${today}.`;
   }
 }
 
-// ── GITHUB SYNC ───────────────────────────────────────────────
-async function pushToGitHub(){
-  setSyncState('syncing');
-  const raw=JSON.stringify({products,sales,singles},null,2);
-  const content=btoa(unescape(encodeURIComponent(raw)));
-  const body={message:'Update CRM data',content};
-  if(ghFileSha)body.sha=ghFileSha;
-  try{
-    const res=await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_PATH}`,{
-      method:'PUT',
-      headers:{'Authorization':`token ${GH_TOKEN}`,'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'},
-      body:JSON.stringify(body)
-    });
-    const data=await res.json();
-    if(res.ok){ghFileSha=data.content.sha;setSyncState('saved');}
-    else setSyncState('error');
-  }catch(e){setSyncState('error');}
-}
-
-async function loadFromGitHub(){
-  if(!GH_TOKEN||!GH_OWNER||!GH_REPO){showToast('GitHub not configured. Fill in GH_TOKEN, GH_OWNER, and GH_REPO.');return;}
-  setSyncState('syncing');
-  try{
-    const res=await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_PATH}`,{
-      headers:{'Authorization':`token ${GH_TOKEN}`,'Accept':'application/vnd.github.v3+json','Cache-Control':'no-cache'}
-    });
-    if(!res.ok){setSyncState('error');showToast('Could not reach GitHub. Check config.');return;}
-    const data=await res.json();
-    ghFileSha=data.sha;
-    const json=JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g,'')))));
-    products=json.products||[];sales=json.sales||[];singles=json.singles||[];
-    localStorage.setItem(SK,JSON.stringify({products,sales,singles}));
-    setSyncState('saved');
-    renderAll();renderSales();
-    if(document.getElementById('view-singles').classList.contains('active')){renderSinglesMetrics();renderSingles();}
-    showToast('Sales log refreshed from GitHub.');
-  }catch(e){setSyncState('error');showToast('Sync error. Check console.');}
-}
-
-async function initGitHub(){
-  if(!GH_TOKEN||!GH_OWNER||!GH_REPO)return;
-  setSyncState('syncing');
-  try{
-    const res=await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_PATH}`,{
-      headers:{'Authorization':`token ${GH_TOKEN}`,'Accept':'application/vnd.github.v3+json'}
-    });
-    if(!res.ok){setSyncState('error');return;}
-    const data=await res.json();
-    ghFileSha=data.sha;
-    const json=JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g,'')))));
-    products=json.products||[];sales=json.sales||[];singles=json.singles||[];
-    localStorage.setItem(SK,JSON.stringify({products,sales,singles}));
-    setSyncState('saved');
-    renderAll();
-  }catch(e){setSyncState('error');}
-}
-
-// ── REFRESH MODAL ─────────────────────────────────────────────
-function openRefreshModal(){
-  document.getElementById('refresh-pw-input').value='';
-  document.getElementById('refresh-pw-error').style.display='none';
-  document.getElementById('refresh-pw-modal').classList.add('open');
-  setTimeout(()=>document.getElementById('refresh-pw-input').focus(),50);
-}
-function closeRefreshModal(){document.getElementById('refresh-pw-modal').classList.remove('open');}
-function confirmRefresh(){
-  if(document.getElementById('refresh-pw-input').value!==REFRESH_PW){
-    document.getElementById('refresh-pw-error').style.display='block';
-    document.getElementById('refresh-pw-input').value='';
-    document.getElementById('refresh-pw-input').focus();
-    return;
-  }
-  closeRefreshModal();
-  loadFromGitHub();
-}
-
 // ── UTILS ─────────────────────────────────────────────────────
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
 function renderAll(){renderMetrics();renderFilters();renderTable();}
 
+// ── API KEY ───────────────────────────────────────────────────
+function getProxyUrl(){ return localStorage.getItem('ww_proxy_url')||''; }
+function promptApiKey(){
+  document.getElementById('apikey-input').value=getProxyUrl();
+  document.getElementById('apikey-modal').classList.add('open');
+}
+function closeApiKey(){ document.getElementById('apikey-modal').classList.remove('open'); }
+function saveApiKey(){
+  const k=document.getElementById('apikey-input').value.trim();
+  if(!k){showToast('Please enter your proxy URL.');return;}
+  localStorage.setItem('ww_proxy_url',k);
+  closeApiKey();
+  const btn=document.getElementById('api-key-btn');
+  btn.style.color='#69F0AE';btn.textContent='🔑 Connected';
+  setTimeout(()=>{btn.style.color='';btn.textContent='🔑 AI setup';},2500);
+  showToast('Proxy URL saved — AI search ready!');
+}
+function getHeaders(){
+  return {'Content-Type':'application/json'};
+}
+function getEndpoint(){
+  const proxy=getProxyUrl();
+  // If they've set a proxy URL, use it; otherwise fall back to direct (works in claude.ai preview)
+  return proxy || 'https://api.anthropic.com/v1/messages';
+}
+function buildBody(prompt, maxTokens=1800){
+  const proxy=getProxyUrl();
+  const body={model:'claude-sonnet-4-20250514',max_tokens:maxTokens,tools:[{type:'web_search_20250305',name:'web_search'}],messages:[{role:'user',content:prompt}]};
+  // Direct Anthropic calls need extra headers baked into body isn't possible — proxy handles auth
+  return JSON.stringify(body);
+}
+function checkKey(){
+  if(!getProxyUrl()){promptApiKey();return false;}
+  return true;
+}
+let _confirmCb = null;
+function showConfirm(title, msg, cb) {
+  _confirmCb = cb;
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-msg').textContent = msg;
+  document.getElementById('confirm-modal').classList.add('open');
+}
+function closeConfirm() { document.getElementById('confirm-modal').classList.remove('open'); _confirmCb = null; }
+function runConfirm() { const cb = _confirmCb; closeConfirm(); if(cb) cb(); }
+
+// ── ESC TO CLOSE ─────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  ['modal','sell-modal','single-modal','sell-single-modal','confirm-modal','apikey-modal'].forEach(id => {
+    document.getElementById(id).classList.remove('open');
+  });
+  _confirmCb = null;
+});
+
 // ── INIT ──────────────────────────────────────────────────────
-load();renderAll();initGitHub();
+load();renderAll();
+if(getProxyUrl()){const btn=document.getElementById('api-key-btn');btn.style.color='#69F0AE';btn.textContent='🔑 Connected';}
 setTimeout(()=>{document.getElementById('ls').classList.add('hidden');setTimeout(()=>document.getElementById('ls').remove(),400);},1100);
 </script>
 </body>
