@@ -364,7 +364,13 @@ tr:hover td{background:#FAFAF7;}
   <!-- ══════════ SALES LOG ══════════ -->
   <div id="view-sales" class="view">
     <div class="sales-summary" id="sales-summary"></div>
-    <div class="sh"><div class="st">Transaction history</div></div>
+    <div class="sh">
+      <div class="st">Transaction history</div>
+      <button class="btn" onclick="openRefreshModal()">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/><path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/></svg>
+        Refresh
+      </button>
+    </div>
     <div class="tw">
       <table>
         <thead><tr><th>Date</th><th>Type</th><th>Product / Card</th><th>Qty</th><th>Price</th><th>Revenue</th><th>Cost</th><th>Profit</th></tr></thead>
@@ -526,6 +532,22 @@ tr:hover td{background:#FAFAF7;}
   </div>
 </div>
 
+<!-- ══ REFRESH PASSWORD MODAL ══ -->
+<div class="mo" id="refresh-pw-modal">
+  <div class="modal" style="width:360px;">
+    <div class="modal-title">Refresh sales log</div>
+    <div class="fr">
+      <label>Password</label>
+      <input type="password" id="refresh-pw-input" placeholder="Enter password" onkeydown="if(event.key==='Enter')confirmRefresh()">
+      <div class="hint" id="refresh-pw-error" style="color:var(--red);display:none;">Incorrect password. Try again.</div>
+    </div>
+    <div class="mf">
+      <button class="btn" onclick="closeRefreshModal()">Cancel</button>
+      <button class="btn primary" onclick="confirmRefresh()">Refresh</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -533,9 +555,18 @@ tr:hover td{background:#FAFAF7;}
 const SK='ww_crm_v4';
 let products=[],sales=[],singles=[],singlesFilter='all',editingSingleId=null,sellingId=null,editingId=null,purchaseType='case',sellingSSId=null;
 
+// ── GITHUB CONFIG ─────────────────────────────────────────────
+// Create a GitHub PAT at github.com/settings/tokens (repo read/write scope).
+const GH_TOKEN  = '';          // personal access token
+const GH_OWNER  = '';          // github username / org
+const GH_REPO   = '';          // repository name
+const GH_PATH   = 'data.json'; // file path inside repo
+const REFRESH_PW= 'wakeland';  // refresh password — change this
+let ghFileSha   = null;
+
 function save(){
   try{localStorage.setItem(SK,JSON.stringify({products,sales,singles}));}catch(e){}
-  setSyncState('saved');
+  if(GH_TOKEN&&GH_OWNER&&GH_REPO){pushToGitHub();}else{setSyncState('saved');}
 }
 function load(){
   try{const d=JSON.parse(localStorage.getItem(SK)||'{}');products=d.products||[];sales=d.sales||[];singles=d.singles||[];}catch(e){}
@@ -1084,12 +1115,88 @@ Include 4-8 recent sales. Today: ${today}.`;
   }
 }
 
+// ── GITHUB SYNC ───────────────────────────────────────────────
+async function pushToGitHub(){
+  setSyncState('syncing');
+  const raw=JSON.stringify({products,sales,singles},null,2);
+  const content=btoa(unescape(encodeURIComponent(raw)));
+  const body={message:'Update CRM data',content};
+  if(ghFileSha)body.sha=ghFileSha;
+  try{
+    const res=await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_PATH}`,{
+      method:'PUT',
+      headers:{'Authorization':`token ${GH_TOKEN}`,'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'},
+      body:JSON.stringify(body)
+    });
+    const data=await res.json();
+    if(res.ok){ghFileSha=data.content.sha;setSyncState('saved');}
+    else setSyncState('error');
+  }catch(e){setSyncState('error');}
+}
+
+async function loadFromGitHub(){
+  if(!GH_TOKEN||!GH_OWNER||!GH_REPO){showToast('GitHub not configured. Fill in GH_TOKEN, GH_OWNER, and GH_REPO.');return;}
+  setSyncState('syncing');
+  try{
+    const res=await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_PATH}`,{
+      headers:{'Authorization':`token ${GH_TOKEN}`,'Accept':'application/vnd.github.v3+json','Cache-Control':'no-cache'}
+    });
+    if(!res.ok){setSyncState('error');showToast('Could not reach GitHub. Check config.');return;}
+    const data=await res.json();
+    ghFileSha=data.sha;
+    const json=JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g,'')))));
+    products=json.products||[];sales=json.sales||[];singles=json.singles||[];
+    localStorage.setItem(SK,JSON.stringify({products,sales,singles}));
+    setSyncState('saved');
+    renderAll();renderSales();
+    if(document.getElementById('view-singles').classList.contains('active')){renderSinglesMetrics();renderSingles();}
+    showToast('Sales log refreshed from GitHub.');
+  }catch(e){setSyncState('error');showToast('Sync error. Check console.');}
+}
+
+async function initGitHub(){
+  if(!GH_TOKEN||!GH_OWNER||!GH_REPO)return;
+  setSyncState('syncing');
+  try{
+    const res=await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_PATH}`,{
+      headers:{'Authorization':`token ${GH_TOKEN}`,'Accept':'application/vnd.github.v3+json'}
+    });
+    if(!res.ok){setSyncState('error');return;}
+    const data=await res.json();
+    ghFileSha=data.sha;
+    const json=JSON.parse(decodeURIComponent(escape(atob(data.content.replace(/\n/g,'')))));
+    products=json.products||[];sales=json.sales||[];singles=json.singles||[];
+    localStorage.setItem(SK,JSON.stringify({products,sales,singles}));
+    setSyncState('saved');
+    renderAll();
+  }catch(e){setSyncState('error');}
+}
+
+// ── REFRESH MODAL ─────────────────────────────────────────────
+function openRefreshModal(){
+  document.getElementById('refresh-pw-input').value='';
+  document.getElementById('refresh-pw-error').style.display='none';
+  document.getElementById('refresh-pw-modal').classList.add('open');
+  setTimeout(()=>document.getElementById('refresh-pw-input').focus(),50);
+}
+function closeRefreshModal(){document.getElementById('refresh-pw-modal').classList.remove('open');}
+function confirmRefresh(){
+  if(document.getElementById('refresh-pw-input').value!==REFRESH_PW){
+    document.getElementById('refresh-pw-error').style.display='block';
+    document.getElementById('refresh-pw-input').value='';
+    document.getElementById('refresh-pw-input').focus();
+    return;
+  }
+  closeRefreshModal();
+  loadFromGitHub();
+}
+
 // ── UTILS ─────────────────────────────────────────────────────
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
 function renderAll(){renderMetrics();renderFilters();renderTable();}
 
 // ── INIT ──────────────────────────────────────────────────────
-load();renderAll();
+load();renderAll();initGitHub();
 setTimeout(()=>{document.getElementById('ls').classList.add('hidden');setTimeout(()=>document.getElementById('ls').remove(),400);},1100);
 </script>
 </body>
