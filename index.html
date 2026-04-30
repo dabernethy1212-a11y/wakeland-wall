@@ -259,7 +259,7 @@ tr:hover td{background:#FAFAF7;}
     <button class="nav-btn" onclick="switchView('ai')">AI pricing</button>
   </div>
   <div style="display:flex;align-items:center;gap:12px;">
-    <button onclick="promptApiKey()" id="api-key-btn" style="padding:5px 11px;font-size:11px;font-family:'DM Sans',sans-serif;font-weight:500;border:1px solid rgba(255,255,255,.2);border-radius:6px;cursor:pointer;background:transparent;color:rgba(255,255,255,.5);transition:all .15s;" title="Set up AI pricing search">🔑 AI setup</button>
+    <button onclick="openSettings()" id="settings-btn" style="padding:5px 11px;font-size:11px;font-family:'DM Sans',sans-serif;font-weight:500;border:1px solid rgba(255,255,255,.2);border-radius:6px;cursor:pointer;background:transparent;color:rgba(255,255,255,.5);transition:all .15s;">⚙️ Settings</button>
     <div class="sync-pill">
       <div class="sync-dot" id="sync-dot"></div>
       <span id="sync-label">Saved</span>
@@ -582,47 +582,31 @@ tr:hover td{background:#FAFAF7;}
 </div>
 
 <!-- ══ API KEY MODAL ══ -->
-<div class="mo" id="apikey-modal" onclick="if(event.target===this)closeApiKey()">
-  <div class="modal" onclick="event.stopPropagation()" style="width:480px;max-width:95vw;">
-    <div class="modal-title">Set up AI search</div>
-    <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6;">AI pricing and trend search needs a one-time setup. Because browsers block direct API calls from hosted websites, you need a free Cloudflare Worker proxy. It takes about 3 minutes.</p>
+<!-- ══ SETTINGS MODAL ══ -->
+<div class="mo" id="settings-modal" onclick="if(event.target===this)closeSettings()">
+  <div class="modal" onclick="event.stopPropagation()" style="width:500px;max-width:95vw;">
+    <div class="modal-title">⚙️ Settings</div>
 
-    <div style="background:var(--surface2);border-radius:var(--r);padding:14px 16px;margin-bottom:16px;font-size:12px;line-height:1.8;color:var(--text);">
-      <strong style="font-size:13px;">Quick setup (free):</strong><br>
-      1. Go to <strong>workers.cloudflare.com</strong> → sign up free<br>
-      2. Click <strong>Create Worker</strong> → paste the code below → Deploy<br>
-      3. Copy your worker URL (e.g. <em>my-worker.username.workers.dev</em>)<br>
-      4. Paste it in the field below and save
+    <!-- JSONBIN SECTION -->
+    <div style="background:var(--surface2);border-radius:var(--r);padding:14px 16px;margin-bottom:16px;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px;">☁️ Cloud data sync (JSONBin)</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.6;">Saves your inventory, sales, singles and breaks to the cloud so all devices stay in sync. Get your credentials at <strong>jsonbin.io</strong>.</div>
+      <div class="fr"><label>JSONBin API Key</label><input type="password" id="jb-key" placeholder="$2a$10$..." autocomplete="off"></div>
+      <div class="fr"><label>JSONBin Bin ID</label><input type="text" id="jb-bin" placeholder="64abc123..." autocomplete="off"></div>
+      <div id="jb-status" style="font-size:12px;margin-top:4px;"></div>
+      <button class="btn primary" onclick="saveJBSettings()" style="margin-top:8px;">Save &amp; test connection</button>
     </div>
 
-    <div style="background:#1C1B18;border-radius:var(--r);padding:12px 14px;margin-bottom:16px;font-size:11px;font-family:'DM Mono',monospace;color:#B8CEFF;line-height:1.7;overflow-x:auto;white-space:pre;">export default {
-  async fetch(req) {
-    if (req.method==='OPTIONS') return new Response(null,{headers:cors()});
-    const body = await req.text();
-    const res = await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'anthropic-version':'2023-06-01',
-        'x-api-key':'YOUR_API_KEY_HERE'
-      },
-      body
-    });
-    const data = await res.text();
-    return new Response(data,{headers:{...cors(),'Content-Type':'application/json'}});
-  }
-};
-function cors(){return{'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'POST,OPTIONS','Access-Control-Allow-Headers':'*'};}</div>
-
-    <p style="font-size:11px;color:var(--text3);margin-bottom:14px;">Replace <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;">YOUR_API_KEY_HERE</code> with your key from <strong>console.anthropic.com</strong> → API Keys.</p>
-
-    <div class="fr">
-      <label>Your Cloudflare Worker URL</label>
-      <input type="text" id="apikey-input" placeholder="https://my-worker.username.workers.dev" autocomplete="off">
+    <!-- AI PROXY SECTION -->
+    <div style="background:var(--surface2);border-radius:var(--r);padding:14px 16px;margin-bottom:16px;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px;">🔑 AI pricing search (Cloudflare Worker)</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.6;">Required for AI price lookup and market trend search. Set up a free worker at <strong>workers.cloudflare.com</strong>.</div>
+      <div class="fr"><label>Cloudflare Worker URL</label><input type="text" id="cf-url" placeholder="https://my-worker.username.workers.dev" autocomplete="off"></div>
+      <button class="btn primary" onclick="saveCFSettings()" style="margin-top:8px;">Save proxy URL</button>
     </div>
+
     <div class="mf">
-      <button class="btn" onclick="closeApiKey()">Cancel</button>
-      <button class="btn primary" onclick="saveApiKey()">Save &amp; connect</button>
+      <button class="btn" onclick="closeSettings()">Close</button>
     </div>
   </div>
 </div>
@@ -644,14 +628,15 @@ function cors(){return{'Access-Control-Allow-Origin':'*','Access-Control-Allow-M
 <script>
 // ── STORAGE ───────────────────────────────────────────────────
 const SK='ww_crm_v4';
-let products=[],sales=[],singles=[],breaks=[],singlesFilter='all',editingSingleId=null,sellingId=null,editingId=null,purchaseType='case',sellingSSId=null,breakingId=null;
+let products=[],sales=[],singles=[],breakLogs=[],singlesFilter='all',editingSingleId=null,sellingId=null,editingId=null,purchaseType='case',sellingSSId=null,breakingId=null;
 
 function save(){
-  try{localStorage.setItem(SK,JSON.stringify({products,sales,singles,breaks}));}catch(e){}
+  try{localStorage.setItem(SK,JSON.stringify({products,sales,singles,breakLogs}));}catch(e){}
   setSyncState('saved');
+  cloudSave();
 }
 function load(){
-  try{const d=JSON.parse(localStorage.getItem(SK)||'{}');products=d.products||[];sales=d.sales||[];singles=d.singles||[];breaks=d.breaks||[];}catch(e){}
+  try{const d=JSON.parse(localStorage.getItem(SK)||'{}');products=d.products||[];sales=d.sales||[];singles=d.singles||[];breakLogs=d.breakLogs||[];}catch(e){}
   if(!products.length)seed();
 }
 function seed(){
@@ -1171,7 +1156,7 @@ function confirmBreak(){
   if(qty>avail(p)){showToast(`Only ${avail(p)} box${avail(p)!==1?'es':''} available.`);return;}
   p.soldBoxes=(p.soldBoxes||0)+qty;
   const totalCost=qty*cpb(p);
-  breaks.push({id:Date.now(),date:Date.now(),productName:p.name,productId:p.id,brand:p.brand,qty,costPerBox:cpb(p),totalCost,notes});
+  breakLogs.push({id:Date.now(),date:Date.now(),productName:p.name,productId:p.id,brand:p.brand,qty,costPerBox:cpb(p),totalCost,notes});
   save();closeBreakModal();renderAll();
   showToast(`Break logged: ${qty} box${qty>1?'es':''} · ${fm(totalCost)} cost`);
 }
@@ -1181,7 +1166,7 @@ function populateBreaksMonthFilter(){
   const sel=document.getElementById('breaks-month-filter');
   if(!sel)return;
   const current=sel.value;
-  const months=[...new Set(breaks.map(b=>{
+  const months=[...new Set(breakLogs.map(b=>{
     const d=new Date(b.date);
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
   }))].sort((a,b)=>b.localeCompare(a));
@@ -1193,9 +1178,9 @@ function populateBreaksMonthFilter(){
 }
 function getFilteredBreaks(){
   const sel=document.getElementById('breaks-month-filter');
-  if(!sel||sel.value==='all')return breaks;
+  if(!sel||sel.value==='all')return breakLogs;
   const v=sel.value;
-  return breaks.filter(b=>{
+  return breakLogs.filter(b=>{
     const d=new Date(b.date);
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`===v;
   });
@@ -1226,13 +1211,13 @@ function deleteSelectedBreaks(){
     'This will remove the selected break entries and restore boxes to inventory.',
     ()=>{
       ids.forEach(id=>{
-        const b=breaks.find(x=>x.id===id);
+        const b=breakLogs.find(x=>x.id===id);
         if(b){
           const prod=products.find(p=>p.id===b.productId);
           if(prod)prod.soldBoxes=Math.max(0,(prod.soldBoxes||0)-b.qty);
         }
       });
-      breaks=breaks.filter(b=>!ids.includes(b.id));
+      breakLogs=breakLogs.filter(b=>!ids.includes(b.id));
       save();renderAll();renderBreaks();
       showToast(`${ids.length} break${ids.length>1?'s':''} deleted.`);
     }
@@ -1418,38 +1403,106 @@ function showToast(msg){const t=document.getElementById('toast');t.textContent=m
 function renderAll(){renderMetrics();renderFilters();renderTable();}
 
 // ── API KEY ───────────────────────────────────────────────────
+// ── SETTINGS ──────────────────────────────────────────────────
+function openSettings(){
+  document.getElementById('jb-key').value=localStorage.getItem('ww_jb_key')||'';
+  document.getElementById('jb-bin').value=localStorage.getItem('ww_jb_bin')||'';
+  document.getElementById('cf-url').value=localStorage.getItem('ww_proxy_url')||'';
+  document.getElementById('jb-status').textContent='';
+  document.getElementById('settings-modal').classList.add('open');
+}
+function closeSettings(){ document.getElementById('settings-modal').classList.remove('open'); }
+
+function saveJBSettings(){
+  const key=document.getElementById('jb-key').value.trim();
+  const bin=document.getElementById('jb-bin').value.trim();
+  if(!key||!bin){showToast('Enter both API key and Bin ID.');return;}
+  localStorage.setItem('ww_jb_key',key);
+  localStorage.setItem('ww_jb_bin',bin);
+  const status=document.getElementById('jb-status');
+  status.style.color='var(--text3)';status.textContent='Testing connection…';
+  // Test by doing a GET
+  fetch(`https://api.jsonbin.io/v3/b/${bin}/latest`,{headers:{'X-Master-Key':key}})
+    .then(r=>r.json())
+    .then(d=>{
+      if(d.record){
+        status.style.color='var(--green)';status.textContent='✓ Connected! Data will sync automatically.';
+        updateSettingsBtn();
+        // Load cloud data
+        const rec=d.record;
+        if(rec.products) products=rec.products;
+        if(rec.sales) sales=rec.sales;
+        if(rec.singles) singles=rec.singles;
+        if(rec.breakLogs) breakLogs=rec.breakLogs;
+        renderAll();
+        if(document.getElementById('view-singles').classList.contains('active')){renderSinglesMetrics();renderSingles();}
+        showToast('Cloud data loaded!');
+      } else {
+        status.style.color='var(--red)';status.textContent='Could not connect — check your keys.';
+      }
+    })
+    .catch(()=>{status.style.color='var(--red)';status.textContent='Connection failed — check your keys.';});
+}
+
+function saveCFSettings(){
+  const url=document.getElementById('cf-url').value.trim();
+  if(!url){showToast('Enter your Cloudflare Worker URL.');return;}
+  localStorage.setItem('ww_proxy_url',url);
+  updateSettingsBtn();
+  showToast('AI proxy saved!');
+}
+
+function updateSettingsBtn(){
+  const btn=document.getElementById('settings-btn');
+  const hasJB=localStorage.getItem('ww_jb_key')&&localStorage.getItem('ww_jb_bin');
+  const hasCF=localStorage.getItem('ww_proxy_url');
+  if(hasJB&&hasCF){btn.style.color='#69F0AE';btn.textContent='⚙️ Connected';}
+  else if(hasJB){btn.style.color='#FFC107';btn.textContent='⚙️ Partial';}
+  else{btn.style.color='rgba(255,255,255,.5)';btn.textContent='⚙️ Settings';}
+}
+
+// ── JSONBIN SAVE/LOAD ─────────────────────────────────────────
+async function cloudSave(){
+  const key=localStorage.getItem('ww_jb_key');
+  const bin=localStorage.getItem('ww_jb_bin');
+  if(!key||!bin) return;
+  setSyncState('syncing');
+  try{
+    await fetch(`https://api.jsonbin.io/v3/b/${bin}`,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':key},
+      body:JSON.stringify({products,sales,singles,breakLogs})
+    });
+    setSyncState('saved');
+  }catch(e){setSyncState('error');}
+}
+
+async function cloudLoad(){
+  const key=localStorage.getItem('ww_jb_key');
+  const bin=localStorage.getItem('ww_jb_bin');
+  if(!key||!bin) return false;
+  try{
+    const r=await fetch(`https://api.jsonbin.io/v3/b/${bin}/latest`,{headers:{'X-Master-Key':key}});
+    const d=await r.json();
+    if(d.record){
+      if(d.record.products) products=d.record.products;
+      if(d.record.sales) sales=d.record.sales;
+      if(d.record.singles) singles=d.record.singles;
+      if(d.record.breakLogs) breakLogs=d.record.breakLogs;
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+
 function getProxyUrl(){ return localStorage.getItem('ww_proxy_url')||''; }
-function promptApiKey(){
-  document.getElementById('apikey-input').value=getProxyUrl();
-  document.getElementById('apikey-modal').classList.add('open');
-}
-function closeApiKey(){ document.getElementById('apikey-modal').classList.remove('open'); }
-function saveApiKey(){
-  const k=document.getElementById('apikey-input').value.trim();
-  if(!k){showToast('Please enter your proxy URL.');return;}
-  localStorage.setItem('ww_proxy_url',k);
-  closeApiKey();
-  const btn=document.getElementById('api-key-btn');
-  btn.style.color='#69F0AE';btn.textContent='🔑 Connected';
-  setTimeout(()=>{btn.style.color='';btn.textContent='🔑 AI setup';},2500);
-  showToast('Proxy URL saved — AI search ready!');
-}
-function getHeaders(){
-  return {'Content-Type':'application/json'};
-}
-function getEndpoint(){
-  const proxy=getProxyUrl();
-  // If they've set a proxy URL, use it; otherwise fall back to direct (works in claude.ai preview)
-  return proxy || 'https://api.anthropic.com/v1/messages';
-}
-function buildBody(prompt, maxTokens=1800){
-  const proxy=getProxyUrl();
-  const body={model:'claude-sonnet-4-20250514',max_tokens:maxTokens,tools:[{type:'web_search_20250305',name:'web_search'}],messages:[{role:'user',content:prompt}]};
-  // Direct Anthropic calls need extra headers baked into body isn't possible — proxy handles auth
-  return JSON.stringify(body);
+function getHeaders(){ return {'Content-Type':'application/json'}; }
+function getEndpoint(){ return getProxyUrl()||'https://api.anthropic.com/v1/messages'; }
+function buildBody(prompt,maxTokens=1800){
+  return JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:maxTokens,tools:[{type:'web_search_20250305',name:'web_search'}],messages:[{role:'user',content:prompt}]});
 }
 function checkKey(){
-  if(!getProxyUrl()){promptApiKey();return false;}
+  if(!getProxyUrl()){openSettings();return false;}
   return true;
 }
 let _confirmCb = null;
@@ -1465,7 +1518,7 @@ function runConfirm() { const cb = _confirmCb; closeConfirm(); if(cb) cb(); }
 // ── ESC TO CLOSE ─────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
-  ['modal','sell-modal','single-modal','sell-single-modal','confirm-modal','apikey-modal','break-modal'].forEach(id => {
+  ['modal','sell-modal','single-modal','sell-single-modal','confirm-modal','settings-modal','break-modal'].forEach(id => {
     document.getElementById(id).classList.remove('open');
   });
   _confirmCb = null;
@@ -1473,7 +1526,11 @@ document.addEventListener('keydown', e => {
 
 // ── INIT ──────────────────────────────────────────────────────
 load();renderAll();
-if(getProxyUrl()){const btn=document.getElementById('api-key-btn');btn.style.color='#69F0AE';btn.textContent='🔑 Connected';}
+updateSettingsBtn();
+// Try loading from cloud on startup
+cloudLoad().then(loaded=>{
+  if(loaded){renderAll();if(document.getElementById('view-singles').classList.contains('active')){renderSinglesMetrics();renderSingles();}}
+});
 setTimeout(()=>{document.getElementById('ls').classList.add('hidden');setTimeout(()=>document.getElementById('ls').remove(),400);},1100);
 </script>
 </body>
