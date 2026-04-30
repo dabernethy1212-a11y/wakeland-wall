@@ -375,10 +375,28 @@ tr:hover td{background:#FAFAF7;}
     <div class="metrics-row" id="consign-metrics"></div>
     <div class="sh">
       <div class="st">Consignments</div>
-      <button class="btn primary" onclick="openConsignorModal()">+ Add consignor</button>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <select id="consign-month-filter" onchange="renderConsignments()" style="padding:7px 12px;font-size:13px;font-family:'DM Sans',sans-serif;border:1px solid var(--border-s);border-radius:var(--r);background:var(--surface);color:var(--text);outline:none;cursor:pointer;"><option value="all">All time</option></select>
+        <button class="btn sm danger" id="delete-consign-btn" onclick="deleteSelectedConsign()" style="display:none;">Delete selected</button>
+        <button class="btn primary" onclick="openConsignSaleModal()">+ Log sale</button>
+      </div>
     </div>
-    <div id="consign-grid"></div>
-    <div id="empty-consign" class="empty" style="display:none;"><div class="icon">🏷️</div><p>No consignors yet. Add a consignor to get started.</p></div>
+    <!-- CONSIGNOR MANAGEMENT -->
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
+      <span style="font-size:12px;color:var(--text3);font-weight:500;">Consignors:</span>
+      <div id="consignor-pills"></div>
+      <button class="btn sm" onclick="openConsignorModal()" style="font-size:11px;">+ Add consignor</button>
+    </div>
+    <div class="tw">
+      <table>
+        <thead><tr>
+          <th style="width:36px;"><input type="checkbox" id="consign-all-cb" onchange="toggleSelectAllConsign(this)" style="cursor:pointer;"></th>
+          <th>Date</th><th>Consignor</th><th>Sale amount</th><th>Their cut</th><th>Our cut</th><th>Note</th><th></th>
+        </tr></thead>
+        <tbody id="consign-body"></tbody>
+      </table>
+      <div id="empty-consign" class="empty" style="display:none;"><div class="icon">🏷️</div><p>No consignment sales yet. Log a sale when you sell a consignment item in store.</p></div>
+    </div>
   </div>
 
   <!-- ══════════ SALES LOG ══════════ -->
@@ -585,11 +603,11 @@ tr:hover td{background:#FAFAF7;}
 
 <!-- ══ ADD CONSIGNOR MODAL ══ -->
 <div class="mo" id="consignor-modal" onclick="if(event.target===this)closeConsignorModal()">
-  <div class="modal" onclick="event.stopPropagation()" style="width:440px;max-width:95vw;">
+  <div class="modal" onclick="event.stopPropagation()" style="width:400px;max-width:95vw;">
     <div class="modal-title" id="consignor-modal-title">Add consignor</div>
     <div class="fr"><label>Consignor name</label><input type="text" id="c-name" placeholder="e.g. John Smith"></div>
     <div class="fg">
-      <div class="fr"><label>Your cut (%)</label><input type="number" id="c-cut" placeholder="10" min="0" max="100" step="1" oninput="calcConsignPreview()"><div class="hint" style="font-size:11px;color:var(--text3);margin-top:4px;">You keep this %, pay out the rest</div></div>
+      <div class="fr"><label>Your cut (%)</label><input type="number" id="c-cut" placeholder="10" min="0" max="100" step="1"><div style="font-size:11px;color:var(--text3);margin-top:4px;">You keep this %, pay out the rest</div></div>
       <div class="fr"><label>Sticker color</label>
         <select id="c-color">
           <option value="#EF5350">🔴 Red</option>
@@ -613,31 +631,21 @@ tr:hover td{background:#FAFAF7;}
   </div>
 </div>
 
-<!-- ══ ADD CONSIGNMENT ITEM MODAL ══ -->
-<div class="mo" id="consign-item-modal" onclick="if(event.target===this)closeConsignItemModal()">
-  <div class="modal" onclick="event.stopPropagation()" style="width:440px;max-width:95vw;">
-    <div class="modal-title" id="consign-item-title">Add item</div>
-    <div class="fr"><label>Item description</label><input type="text" id="ci-desc" placeholder="e.g. 2018 Topps Chrome Ohtani RC PSA 10"></div>
-    <div class="fg">
-      <div class="fr"><label>Asking price ($)</label><input type="number" id="ci-price" placeholder="0.00" min="0" step="0.01"></div>
-      <div class="fr"><label>Notes (optional)</label><input type="text" id="ci-notes" placeholder="Any details"></div>
+<!-- ══ LOG CONSIGNMENT SALE MODAL ══ -->
+<div class="mo" id="consign-sale-modal" onclick="if(event.target===this)closeConsignSaleModal()">
+  <div class="modal" onclick="event.stopPropagation()" style="width:420px;max-width:95vw;">
+    <div class="modal-title">Log consignment sale</div>
+    <div class="fr"><label>Consignor (sticker color)</label>
+      <select id="cs-consignor" onchange="updateConsignSalePreview()" style="width:100%;padding:9px 12px;font-size:13px;font-family:'DM Sans',sans-serif;border:1px solid var(--border-s);border-radius:var(--r);background:var(--surface);color:var(--text);outline:none;">
+        <option value="">Select consignor…</option>
+      </select>
     </div>
-    <div class="mf">
-      <button class="btn" onclick="closeConsignItemModal()">Cancel</button>
-      <button class="btn primary" onclick="saveConsignItem()">Add item</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ SELL CONSIGNMENT ITEM MODAL ══ -->
-<div class="mo" id="consign-sell-modal" onclick="if(event.target===this)closeConsignSellModal()">
-  <div class="modal" onclick="event.stopPropagation()" style="width:400px;max-width:95vw;">
-    <div class="modal-title" id="consign-sell-title">Mark as sold</div>
-    <div class="fr"><label>Actual sale price ($)</label><input type="number" id="cs-price" min="0" step="0.01" oninput="calcConsignSellPreview()"></div>
+    <div class="fr"><label>Sale amount ($)</label><input type="number" id="cs-amount" placeholder="0.00" min="0" step="0.01" oninput="updateConsignSalePreview()"></div>
+    <div class="fr"><label>What was sold (note)</label><input type="text" id="cs-note" placeholder="e.g. Ohtani RC PSA 10, lot of 10 rookies…"></div>
     <div class="preview-box" id="cs-preview" style="display:block;"></div>
     <div class="mf">
-      <button class="btn" onclick="closeConsignSellModal()">Cancel</button>
-      <button class="btn primary" onclick="confirmConsignSale()">Mark sold</button>
+      <button class="btn" onclick="closeConsignSaleModal()">Cancel</button>
+      <button class="btn primary" onclick="saveConsignSale()">Log sale</button>
     </div>
   </div>
 </div>
@@ -659,15 +667,15 @@ tr:hover td{background:#FAFAF7;}
 <script>
 // ── STORAGE ───────────────────────────────────────────────────
 const SK='ww_crm_v4';
-let products=[],sales=[],singles=[],breakLogs=[],singlesLog=[],consignors=[],singlesFilter='all',editingSingleId=null,sellingId=null,editingId=null,purchaseType='case',sellingSSId=null,breakingId=null,currentSinglesType='buy',editingConsignorId=null,addingItemToConsignorId=null,sellingConsignItemId=null,sellingConsignorId=null;
+let products=[],sales=[],singles=[],breakLogs=[],singlesLog=[],consignors=[],consignSales=[],singlesFilter='all',editingSingleId=null,sellingId=null,editingId=null,purchaseType='case',sellingSSId=null,breakingId=null,currentSinglesType='buy',editingConsignorId=null,addingItemToConsignorId=null,sellingConsignItemId=null,sellingConsignorId=null;
 
 function save(){
-  try{localStorage.setItem(SK,JSON.stringify({products,sales,singles,breakLogs,singlesLog,consignors}));}catch(e){}
+  try{localStorage.setItem(SK,JSON.stringify({products,sales,singles,breakLogs,singlesLog,consignors,consignSales}));}catch(e){}
   setSyncState('saved');
   cloudSave();
 }
 function load(){
-  try{const d=JSON.parse(localStorage.getItem(SK)||'{}');products=d.products||[];sales=d.sales||[];singles=d.singles||[];breakLogs=d.breakLogs||[];singlesLog=d.singlesLog||[];consignors=d.consignors||[];}catch(e){}
+  try{const d=JSON.parse(localStorage.getItem(SK)||'{}');products=d.products||[];sales=d.sales||[];singles=d.singles||[];breakLogs=d.breakLogs||[];singlesLog=d.singlesLog||[];consignors=d.consignors||[];consignSales=d.consignSales||[];}catch(e){}
   if(!products.length)seed();
 }
 function seed(){
@@ -834,7 +842,6 @@ function saveSinglesTransaction(){
 function openConsignorModal(id){
   editingConsignorId=id||null;
   const c=id?consignors.find(x=>x.id===id):null;
-  document.getElementById('consignor-modal-title').textContent=c?'Edit consignor':'Add consignor';
   document.getElementById('c-name').value=c?c.name:'';
   document.getElementById('c-cut').value=c?c.cut:'10';
   document.getElementById('c-color').value=c?c.color:'#EF5350';
@@ -852,139 +859,131 @@ function saveConsignor(){
     const idx=consignors.findIndex(x=>x.id===editingConsignorId);
     consignors[idx]={...consignors[idx],name,cut,color,contact};
   } else {
-    consignors.push({id:Date.now(),name,cut,color,contact,items:[]});
+    consignors.push({id:Date.now(),name,cut,color,contact});
   }
   save();closeConsignorModal();renderConsignments();showToast(editingConsignorId?'Consignor updated.':'Consignor added!');
 }
 function deleteConsignor(id){
-  showConfirm('Remove consignor?','This will remove the consignor and all their items.',()=>{
-    consignors=consignors.filter(c=>c.id!==id);save();renderConsignments();showToast('Consignor removed.');
+  showConfirm('Remove consignor?','This will remove the consignor and all their sales history.',()=>{
+    // Remove their sales from consignSales
+    consignSales=consignSales.filter(s=>s.consignorId!==id);
+    consignors=consignors.filter(c=>c.id!==id);
+    save();renderConsignments();showToast('Consignor removed.');
   });
 }
 
-function openConsignItemModal(consignorId){
-  addingItemToConsignorId=consignorId;
-  const c=consignors.find(x=>x.id===consignorId);
-  document.getElementById('consign-item-title').textContent=`Add item — ${c.name}`;
-  ['ci-desc','ci-price','ci-notes'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('consign-item-modal').classList.add('open');
-}
-function closeConsignItemModal(){document.getElementById('consign-item-modal').classList.remove('open');}
-function saveConsignItem(){
-  const desc=document.getElementById('ci-desc').value.trim();
-  if(!desc){showToast('Enter item description.');return;}
-  const price=parseFloat(document.getElementById('ci-price').value)||0;
-  if(!price){showToast('Enter asking price.');return;}
-  const c=consignors.find(x=>x.id===addingItemToConsignorId);
-  if(!c.items)c.items=[];
-  c.items.push({id:Date.now(),desc,price,notes:document.getElementById('ci-notes').value.trim(),sold:false,soldPrice:null,soldDate:null});
-  save();closeConsignItemModal();renderConsignments();showToast('Item added!');
-}
-function deleteConsignItem(consignorId,itemId){
-  showConfirm('Remove item?','This removes the item from this consignor.',()=>{
-    const c=consignors.find(x=>x.id===consignorId);
-    c.items=c.items.filter(i=>i.id!==itemId);
-    save();renderConsignments();showToast('Item removed.');
-  });
-}
+// ── LOG CONSIGNMENT SALE ──────────────────────────────────────
 
-function openConsignSellModal(consignorId,itemId){
-  sellingConsignorId=consignorId;sellingConsignItemId=itemId;
-  const c=consignors.find(x=>x.id===consignorId);
-  const item=c.items.find(i=>i.id===itemId);
-  document.getElementById('consign-sell-title').textContent=`Mark sold — ${item.desc}`;
-  document.getElementById('cs-price').value=item.price;
-  calcConsignSellPreview();
-  document.getElementById('consign-sell-modal').classList.add('open');
+function openConsignSaleModal(){
+  if(!consignors.length){showToast('Add a consignor first.');return;}
+  const sel=document.getElementById('cs-consignor');
+  sel.innerHTML='<option value="">Select consignor…</option>'+consignors.map(c=>`<option value="${c.id}">${c.name} · ${c.cut}% our cut</option>`).join('');
+  ['cs-amount','cs-note'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('cs-preview').style.display='none';
+  document.getElementById('consign-sale-modal').classList.add('open');
 }
-function closeConsignSellModal(){document.getElementById('consign-sell-modal').classList.remove('open');}
-function calcConsignSellPreview(){
-  const c=consignors.find(x=>x.id===sellingConsignorId);if(!c)return;
-  const sp=parseFloat(document.getElementById('cs-price').value)||0;
-  const ourCut=sp*(c.cut/100);
-  const theirCut=sp-ourCut;
+function closeConsignSaleModal(){document.getElementById('consign-sale-modal').classList.remove('open');}
+function updateConsignSalePreview(){
+  const cid=parseInt(document.getElementById('cs-consignor').value);
+  const amt=parseFloat(document.getElementById('cs-amount').value)||0;
+  const c=consignors.find(x=>x.id===cid);
   const prev=document.getElementById('cs-preview');
-  prev.style.display='block';prev.style.color='var(--green)';
-  prev.innerHTML=`Sale: <strong>${fm(sp)}</strong> &nbsp;·&nbsp; Your cut (${c.cut}%): <strong>${fm(ourCut)}</strong> &nbsp;·&nbsp; Owe consignor: <strong style="color:var(--red-t)">${fm(theirCut)}</strong>`;
+  if(c&&amt>0){
+    const ourCut=amt*(c.cut/100);
+    const theirCut=amt-ourCut;
+    prev.style.display='block';prev.style.color='var(--green)';
+    prev.innerHTML=`Sale: <strong>${fm(amt)}</strong> &nbsp;·&nbsp; Your cut (${c.cut}%): <strong class="pp">${fm(ourCut)}</strong> &nbsp;·&nbsp; Owe ${c.name}: <strong style="color:var(--amber-t);">${fm(theirCut)}</strong>`;
+  } else prev.style.display='none';
 }
-function confirmConsignSale(){
-  const c=consignors.find(x=>x.id===sellingConsignorId);
-  const item=c.items.find(i=>i.id===sellingConsignItemId);
-  const sp=parseFloat(document.getElementById('cs-price').value)||0;
-  if(!sp){showToast('Enter sale price.');return;}
-  item.sold=true;item.soldPrice=sp;item.soldDate=Date.now();
-  const ourCut=sp*(c.cut/100);
-  sales.push({id:Date.now(),date:Date.now(),type:'consignment',productName:`Consign [${c.name}] — ${item.desc}`,productId:item.id,qty:1,pricePerBox:sp,revenue:ourCut,cost:0,profit:ourCut});
-  save();closeConsignSellModal();renderConsignments();showToast(`Sold! You keep ${fm(ourCut)}, owe ${c.name} ${fm(sp-ourCut)}`);
+function saveConsignSale(){
+  const cid=parseInt(document.getElementById('cs-consignor').value);
+  const amt=parseFloat(document.getElementById('cs-amount').value)||0;
+  const note=document.getElementById('cs-note').value.trim();
+  if(!cid){showToast('Select a consignor.');return;}
+  if(!amt){showToast('Enter sale amount.');return;}
+  if(!note){showToast('Enter a note describing what was sold.');return;}
+  const c=consignors.find(x=>x.id===cid);
+  const ourCut=amt*(c.cut/100);
+  const theirCut=amt-ourCut;
+  if(!consignSales) consignSales=[];
+  consignSales.push({id:Date.now(),date:Date.now(),consignorId:cid,consignorName:c.name,color:c.color,amount:amt,ourCut,theirCut,note});
+  save();closeConsignSaleModal();renderConsignments();
+  showToast(`Sale logged · You keep ${fm(ourCut)} · Owe ${c.name} ${fm(theirCut)}`);
+}
+
+function populateConsignMonthFilter(){
+  const sel=document.getElementById('consign-month-filter');if(!sel)return;
+  const cur=sel.value;
+  const months=[...new Set((consignSales||[]).map(s=>{const d=new Date(s.date);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}))].sort((a,b)=>b.localeCompare(a));
+  sel.innerHTML='<option value="all">All time</option>'+months.map(m=>{const[yr,mo]=m.split('-');const label=new Date(yr,mo-1,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});return `<option value="${m}" ${cur===m?'selected':''}>${label}</option>`;}).join('');
+}
+function getFilteredConsignSales(){
+  const sel=document.getElementById('consign-month-filter');
+  if(!sel||sel.value==='all') return consignSales||[];
+  const v=sel.value;
+  return (consignSales||[]).filter(s=>{const d=new Date(s.date);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`===v;});
+}
+function toggleSelectAllConsign(cb){document.querySelectorAll('.consign-cb').forEach(c=>c.checked=cb.checked);updateConsignDeleteBtn();}
+function updateConsignDeleteBtn(){
+  const n=document.querySelectorAll('.consign-cb:checked').length;
+  const btn=document.getElementById('delete-consign-btn');
+  if(btn){btn.style.display=n>0?'':'none';if(n>0)btn.textContent=`Delete selected (${n})`;}
+}
+function deleteSelectedConsign(){
+  const ids=[...document.querySelectorAll('.consign-cb:checked')].map(c=>Number(c.dataset.id));
+  if(!ids.length)return;
+  showConfirm(`Delete ${ids.length} sale${ids.length>1?'s':''}?`,'This removes the selected consignment sales.',()=>{
+    consignSales=(consignSales||[]).filter(s=>!ids.includes(s.id));
+    save();renderConsignments();showToast('Deleted.');
+  });
 }
 
 function renderConsignments(){
-  const grid=document.getElementById('consign-grid'),empty=document.getElementById('empty-consign');
-  if(!consignors.length){grid.innerHTML='';empty.style.display='block';return;}
-  empty.style.display='none';
-  // Consignment metrics
-  const allItems=consignors.flatMap(c=>c.items||[]);
-  const soldItems=allItems.filter(i=>i.sold);
-  const availItems=allItems.filter(i=>!i.sold);
-  const totalOwed=consignors.reduce((sum,c)=>{
-    return sum+(c.items||[]).filter(i=>i.sold).reduce((s,i)=>s+i.soldPrice*(1-c.cut/100),0);
-  },0);
-  const ourRevenue=consignors.reduce((sum,c)=>{
-    return sum+(c.items||[]).filter(i=>i.sold).reduce((s,i)=>s+i.soldPrice*(c.cut/100),0);
-  },0);
+  populateConsignMonthFilter();
+  const filtered=getFilteredConsignSales();
+  const totalSales=filtered.reduce((s,x)=>s+x.amount,0);
+  const totalOurCut=filtered.reduce((s,x)=>s+x.ourCut,0);
+  const totalOwed=filtered.reduce((s,x)=>s+x.theirCut,0);
   document.getElementById('consign-metrics').innerHTML=`
-    <div class="mc"><div class="mc-label">Consignors</div><div class="mc-value">${consignors.length}</div><div class="mc-sub">${allItems.length} total items</div></div>
-    <div class="mc"><div class="mc-label">Available items</div><div class="mc-value gold">${availItems.length}</div><div class="mc-sub">Ask value: ${fm(availItems.reduce((s,i)=>s+i.price,0))}</div></div>
-    <div class="mc"><div class="mc-label">Our revenue</div><div class="mc-value green">${fm(ourRevenue)}</div><div class="mc-sub">${soldItems.length} items sold</div></div>
-    <div class="mc"><div class="mc-label">Owed to consignors</div><div class="mc-value amber">${fm(totalOwed)}</div><div class="mc-sub">Unpaid payouts</div></div>`;
-  grid.innerHTML=consignors.map(c=>{
-    const items=c.items||[];
-    const sold=items.filter(i=>i.sold);
-    const avail=items.filter(i=>!i.sold);
-    const owed=sold.reduce((s,i)=>s+i.soldPrice*(1-(c.cut/100)),0);
-    const ourEarned=sold.reduce((s,i)=>s+i.soldPrice*(c.cut/100),0);
-    return `<div class="consignor-block">
-      <div class="consignor-header">
-        <div class="color-dot" style="background:${c.color};"></div>
-        <div>
-          <div class="consignor-name">${c.name}</div>
-          <div class="consignor-meta">${c.cut}% your cut · ${c.contact||'No contact info'}</div>
-        </div>
-        <div class="consignor-stats">
-          <div class="cstat"><div class="cstat-label">Items</div><div class="cstat-val">${avail.length} avail / ${sold.length} sold</div></div>
-          <div class="cstat"><div class="cstat-label">Our earnings</div><div class="cstat-val pp">${fm(ourEarned)}</div></div>
-          <div class="cstat"><div class="cstat-label">Owe them</div><div class="cstat-val" style="color:var(--amber-t);">${fm(owed)}</div></div>
-        </div>
-        <div class="ar" style="margin-left:12px;">
-          <button class="btn sm primary" onclick="openConsignItemModal(${c.id})">+ Item</button>
-          <button class="btn sm" onclick="openConsignorModal(${c.id})">Edit</button>
-          <button class="btn sm danger" onclick="deleteConsignor(${c.id})">✕</button>
-        </div>
-      </div>
-      ${items.length?`<table class="consign-items-table">
-        <thead><tr><th>Item</th><th>Ask price</th><th>Status</th><th>Sold for</th><th>Owe consignor</th><th>Notes</th><th></th></tr></thead>
-        <tbody>${items.map(i=>{
-          const owed=i.sold?fmd(i.soldPrice*(1-c.cut/100)):'—';
-          return `<tr style="${i.sold?'opacity:.65':''}">
-            <td style="font-weight:500;"><span class="color-swatch" style="background:${c.color};"></span>${i.desc}</td>
-            <td class="mono">${fmd(i.price)}</td>
-            <td>${i.sold?'<span class="item-sold-badge">Sold</span>':'<span class="badge in-stock">Available</span>'}</td>
-            <td class="mono ${i.sold?'pp':''}">${i.sold?fmd(i.soldPrice):'—'}</td>
-            <td class="mono" style="color:var(--amber-t);">${owed}</td>
-            <td style="color:var(--text3);font-size:12px;">${i.notes||'—'}</td>
-            <td><div class="ar">
-              ${!i.sold?`<button class="btn sm sold-btn" onclick="openConsignSellModal(${c.id},${i.id})">Mark sold</button>`:''}
-              <button class="btn sm danger" onclick="deleteConsignItem(${c.id},${i.id})">✕</button>
-            </div></td>
-          </tr>`;}).join('')}
-        </tbody>
-      </table>`:`<div style="padding:20px;text-align:center;color:var(--text3);font-size:13px;">No items yet — click + Item to add.</div>`}
-      <div class="consign-footer">
-        <div style="font-size:12px;color:var(--text3);">Sticker color: <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${c.color};vertical-align:middle;margin-left:4px;"></span></div>
-        ${owed>0?`<div style="font-size:12px;font-weight:600;color:var(--amber-t);">💰 Payout due: ${fm(owed)}</div>`:'<div style="font-size:12px;color:var(--text3);">No pending payout</div>'}
-      </div>
-    </div>`;
+    <div class="mc"><div class="mc-label">Consignors</div><div class="mc-value">${consignors.length}</div><div class="mc-sub">${(consignSales||[]).length} total sales</div></div>
+    <div class="mc"><div class="mc-label">Total sales value</div><div class="mc-value">${fm(totalSales)}</div><div class="mc-sub">${filtered.length} transactions</div></div>
+    <div class="mc"><div class="mc-label">Our revenue</div><div class="mc-value green">${fm(totalOurCut)}</div><div class="mc-sub">Our cut of sales</div></div>
+    <div class="mc"><div class="mc-label">Owed to consignors</div><div class="mc-value amber">${fm(totalOwed)}</div><div class="mc-sub">Their cut to pay out</div></div>`;
+
+  // Render consignor pills
+  const pillsEl=document.getElementById('consignor-pills');
+  if(pillsEl) pillsEl.innerHTML=consignors.map(c=>`
+    <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;background:var(--surface2);border:1px solid var(--border-s);margin-right:4px;margin-bottom:4px;">
+      <span style="width:9px;height:9px;border-radius:50%;background:${c.color};display:inline-block;"></span>
+      ${c.name} · ${c.cut}%
+      <button onclick="openConsignorModal(${c.id})" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--text3);padding:0 2px;">✎</button>
+      <button onclick="deleteConsignor(${c.id})" style="background:none;border:none;cursor:pointer;font-size:11px;color:var(--red-t);padding:0 2px;">✕</button>
+    </span>`).join('');
+
+  const body=document.getElementById('consign-body'),empty=document.getElementById('empty-consign');
+  const cb=document.getElementById('consign-all-cb');if(cb)cb.checked=false;
+  document.getElementById('delete-consign-btn').style.display='none';
+  if(!filtered.length){body.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  body.innerHTML=[...filtered].sort((a,b)=>b.date-a.date).map(s=>{
+    const d=new Date(s.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    return `<tr>
+      <td><input type="checkbox" class="consign-cb" data-id="${s.id}" onchange="updateConsignDeleteBtn()" style="cursor:pointer;"></td>
+      <td style="color:var(--text2);font-size:12px;">${d}</td>
+      <td><span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:50%;background:${s.color};display:inline-block;flex-shrink:0;"></span>${s.consignorName}</span></td>
+      <td class="mono" style="font-weight:600;">${fm(s.amount)}</td>
+      <td class="mono pp">${fm(s.ourCut)}</td>
+      <td class="mono" style="color:var(--amber-t);">${fm(s.theirCut)}</td>
+      <td style="color:var(--text2);font-size:12px;">${s.note}</td>
+      <td><button class="btn sm danger" onclick="deleteSingleConsignSale(${s.id})">✕</button></td>
+    </tr>`;
   }).join('');
+}
+function deleteSingleConsignSale(id){
+  showConfirm('Remove this sale?','This will delete this consignment sale entry.',()=>{
+    consignSales=(consignSales||[]).filter(s=>s.id!==id);
+    save();renderConsignments();showToast('Sale removed.');
+  });
 }
 
 // ── INVENTORY TABLE ───────────────────────────────────────────
@@ -1586,7 +1585,7 @@ async function cloudSave(){
     await fetch(`https://api.jsonbin.io/v3/b/${bin}`,{
       method:'PUT',
       headers:{'Content-Type':'application/json','X-Master-Key':key},
-      body:JSON.stringify({products,sales,singles,breakLogs,singlesLog,consignors})
+      body:JSON.stringify({products,sales,singles,breakLogs,singlesLog,consignors,consignSales})
     });
     setSyncState('saved');
   }catch(e){setSyncState('error');}
@@ -1606,6 +1605,7 @@ async function cloudLoad(){
       if(d.record.breakLogs) breakLogs=d.record.breakLogs;
       if(d.record.singlesLog) singlesLog=d.record.singlesLog;
       if(d.record.consignors) consignors=d.record.consignors;
+      if(d.record.consignSales) consignSales=d.record.consignSales;
       return true;
     }
   }catch(e){}
@@ -1635,7 +1635,7 @@ function runConfirm() { const cb = _confirmCb; closeConfirm(); if(cb) cb(); }
 // ── ESC TO CLOSE ─────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
-  ['modal','sell-modal','singles-modal','consignor-modal','consign-item-modal','consign-sell-modal','sell-single-modal','confirm-modal','settings-modal','break-modal'].forEach(id => {
+  ['modal','sell-modal','singles-modal','consignor-modal','consign-sale-modal','confirm-modal','settings-modal','break-modal'].forEach(id => {
     document.getElementById(id).classList.remove('open');
   });
   _confirmCb = null;
