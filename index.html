@@ -211,6 +211,27 @@ tr:hover td{background:#FAFAF7;}
 .sl-price{font-family:'DM Mono',monospace;font-weight:600;color:var(--green);min-width:70px;text-align:right;}
 
 .qli{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;box-shadow:var(--sh);}
+/* SINGLES TYPE BADGES */
+.sbadge-buy{background:var(--green-bg);color:var(--green-t);}
+.sbadge-sell{background:var(--blue-bg);color:var(--blue-t);}
+.sbadge-trade{background:var(--purple-bg);color:var(--purple-t);}
+/* CONSIGNMENT */
+.consignor-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);margin-bottom:16px;box-shadow:var(--sh);overflow:hidden;}
+.consignor-header{display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--border);background:var(--surface2);}
+.color-dot{width:18px;height:18px;border-radius:50%;flex-shrink:0;border:2px solid rgba(0,0,0,.12);}
+.consignor-name{font-size:15px;font-weight:600;flex:1;}
+.consignor-meta{font-size:12px;color:var(--text3);}
+.consignor-stats{display:flex;gap:20px;margin-left:auto;flex-wrap:wrap;}
+.cstat{text-align:right;}<br>.cstat-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;}
+.cstat-val{font-size:14px;font-weight:600;}
+.consign-items-table{width:100%;}
+.consign-items-table th{padding:8px 16px;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);background:var(--surface);text-align:left;}
+.consign-items-table td{padding:10px 16px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;}
+.consign-items-table tr:last-child td{border-bottom:none;}
+.consign-items-table tr:hover td{background:#FAFAF7;}
+.color-swatch{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:middle;border:1px solid rgba(0,0,0,.15);}
+.consign-footer{padding:12px 18px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface2);}
+.item-sold-badge{background:#F1F0FB;color:#4C1D95;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;}
 .qli-name{font-size:13px;font-weight:600;}
 .qli-sub{font-size:11px;color:var(--text3);margin-top:2px;}
 .sales-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
@@ -277,7 +298,8 @@ tr:hover td{background:#FAFAF7;}
   </div>
   <div class="nav">
     <button class="nav-btn active" onclick="switchView('inventory')">Inventory</button>
-    <button class="nav-btn" onclick="switchView('singles')">⭐ Big Singles</button>
+    <button class="nav-btn" onclick="switchView('singles')">🃏 Singles</button>
+    <button class="nav-btn" onclick="switchView('consignments')">🏷️ Consignments</button>
     <button class="nav-btn" onclick="switchView('sales')">Sales log</button>
     <button class="nav-btn" onclick="switchView('breaks')">📦 Breaks</button>
     <button class="nav-btn" onclick="switchView('ai')">AI pricing</button>
@@ -323,70 +345,40 @@ tr:hover td{background:#FAFAF7;}
     </div>
   </div>
 
-  <!-- ══════════ BIG SINGLES ══════════ -->
+  <!-- ══════════ SINGLES ══════════ -->
   <div id="view-singles" class="view">
     <div class="metrics-row" id="singles-metrics"></div>
-
-    <div class="singles-subtabs">
-      <button class="stab active" onclick="switchSinglesTab('inventory')">Card inventory</button>
-      <button class="stab" onclick="switchSinglesTab('trend')">Market trend search</button>
-    </div>
-
-    <!-- SINGLES INVENTORY SUB-TAB -->
-    <div id="sview-inventory" class="sview active">
-      <div class="sh">
-        <div class="st">Big singles — $100+</div>
-        <div style="display:flex;gap:8px;">
-          <button class="btn" onclick="setSingleFilter('all')" id="sf-all" style="font-size:12px;padding:6px 12px;">All</button>
-          <button class="btn" onclick="setSingleFilter('available')" id="sf-available" style="font-size:12px;padding:6px 12px;">Available</button>
-          <button class="btn" onclick="setSingleFilter('sold')" id="sf-sold" style="font-size:12px;padding:6px 12px;">Sold</button>
-          <button class="btn primary" onclick="openSingleModal()">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 2a1 1 0 011 1v4h4a1 1 0 010 2H9v4a1 1 0 01-2 0V9H3a1 1 0 010-2h4V3a1 1 0 011-1z"/></svg>
-            Add single
-          </button>
-        </div>
-      </div>
-      <div class="toolbar">
-        <div class="sw">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M6.5 1a5.5 5.5 0 014.227 9.02l3.376 3.377a.75.75 0 11-1.06 1.06L9.666 11.08A5.5 5.5 0 116.5 1zm0 1.5a4 4 0 100 8 4 4 0 000-8z"/></svg>
-          <input type="text" class="si" id="singles-search" placeholder="Search player, set, year, team…" oninput="renderSingles()">
-        </div>
-      </div>
-      <div class="singles-grid" id="singles-grid"></div>
-      <div id="empty-singles" class="empty" style="display:none;"><div class="icon">🃏</div><p>No singles added yet. Click "Add single" to track your big cards.</p></div>
-    </div>
-
-    <!-- SINGLES TREND SUB-TAB -->
-    <div id="sview-trend" class="sview">
-      <div class="trend-panel">
-        <div class="ai-head">Player &amp; card market trend search</div>
-        <div class="ai-sr">
-          <input type="text" id="trend-query" placeholder="e.g. Shohei Ohtani, Patrick Mahomes rookie PSA 10, Wembanyama Prizm…" onkeydown="if(event.key==='Enter')runTrendSearch()">
-          <button class="btn ai" onclick="runTrendSearch()">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 11l3-3 3 3 5-7" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
-            Analyze trend
-          </button>
-        </div>
-        <div class="ai-hint">See how a player or specific card is trending — recent eBay sales, price direction, demand drivers, and whether now is a good time to buy or hold.</div>
-
-        <div class="trend-result" id="trend-result">
-          <div class="results-status" id="trend-status"></div>
-          <div class="trend-hero" id="trend-hero" style="display:none;">
-            <div class="trend-hero-player" id="th-player"></div>
-            <div class="trend-hero-sub" id="th-sub"></div>
-            <div class="trend-hero-arrow" id="th-arrow"></div>
-            <div class="trend-hero-sentiment" id="th-sentiment"></div>
-          </div>
-          <div class="trend-data-grid" id="trend-data-grid"></div>
-          <div class="trend-narrative ai-summary" id="trend-narrative"></div>
-          <div class="tw sold-listings" id="sold-listings-wrap" style="display:none;">
-            <div class="sl-title" style="padding:10px 14px 0;">Recent eBay sold listings</div>
-            <div id="sold-listings-body"></div>
-          </div>
-          <div class="ai-actions" style="margin-top:12px;" id="trend-actions"></div>
-        </div>
+    <div class="sh">
+      <div class="st">Singles — buy / sell / trade</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn" style="background:var(--green-bg);color:var(--green-t);border-color:var(--green-t);" onclick="openSinglesModal('buy')">+ Buy</button>
+        <button class="btn" style="background:var(--blue-bg);color:var(--blue-t);border-color:var(--blue-t);" onclick="openSinglesModal('sell')">+ Sell</button>
+        <button class="btn" style="background:var(--purple-bg);color:var(--purple-t);border-color:var(--purple-t);" onclick="openSinglesModal('trade')">+ Trade</button>
+        <select id="singles-month-filter" onchange="renderSinglesLog()" style="padding:7px 12px;font-size:13px;font-family:'DM Sans',sans-serif;border:1px solid var(--border-s);border-radius:var(--r);background:var(--surface);color:var(--text);outline:none;cursor:pointer;"><option value="all">All time</option></select>
+        <button class="btn sm danger" id="delete-singles-log-btn" onclick="deleteSelectedSinglesLog()" style="display:none;">Delete selected</button>
       </div>
     </div>
+    <div class="tw">
+      <table>
+        <thead><tr>
+          <th style="width:36px;"><input type="checkbox" id="singles-log-all-cb" onchange="toggleSelectAllSinglesLog(this)" style="cursor:pointer;"></th>
+          <th>Date</th><th>Type</th><th>Description</th><th>Amount</th><th>P&amp;L</th><th>Notes</th>
+        </tr></thead>
+        <tbody id="singles-log-body"></tbody>
+      </table>
+      <div id="empty-singles-log" class="empty" style="display:none;"><div class="icon">🃏</div><p>No singles transactions yet. Log a buy, sell, or trade above.</p></div>
+    </div>
+  </div>
+
+  <!-- ══════════ CONSIGNMENTS ══════════ -->
+  <div id="view-consignments" class="view">
+    <div class="metrics-row" id="consign-metrics"></div>
+    <div class="sh">
+      <div class="st">Consignments</div>
+      <button class="btn primary" onclick="openConsignorModal()">+ Add consignor</button>
+    </div>
+    <div id="consign-grid"></div>
+    <div id="empty-consign" class="empty" style="display:none;"><div class="icon">🏷️</div><p>No consignors yet. Add a consignor to get started.</p></div>
   </div>
 
   <!-- ══════════ SALES LOG ══════════ -->
@@ -543,69 +535,6 @@ tr:hover td{background:#FAFAF7;}
 </div>
 
 <!-- ══ ADD/EDIT SINGLE MODAL ══ -->
-<div class="mo" id="single-modal" onclick="if(event.target===this)closeSingleModal()">
-  <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-title" id="single-modal-title">Add big single</div>
-    <div class="fg">
-      <div class="fr"><label>Player name</label><input type="text" id="s-player" placeholder="e.g. Shohei Ohtani"></div>
-      <div class="fr"><label>Year</label><input type="text" id="s-year" placeholder="2024"></div>
-    </div>
-    <div class="fr"><label>Card description</label><input type="text" id="s-desc" placeholder="e.g. Topps National Treasures Auto /25 PSA 10"></div>
-    <div class="fg">
-      <div class="fr"><label>Sport</label>
-        <select id="s-sport"><option>Baseball</option><option>Football</option><option>Basketball</option><option>Hockey</option><option>Soccer</option><option>Other</option></select>
-      </div>
-      <div class="fr"><label>Team</label><input type="text" id="s-team" placeholder="e.g. Dodgers"></div>
-    </div>
-    <div class="fr"><label>Grading / condition</label>
-      <select id="s-grade">
-        <option value="">Raw / ungraded</option>
-        <option>PSA 10</option><option>PSA 9</option><option>PSA 8</option><option>PSA 7</option>
-        <option>BGS 10 Black Label</option><option>BGS 9.5</option><option>BGS 9</option>
-        <option>SGC 10</option><option>SGC 9.5</option>
-        <option>CGC 10</option>
-      </select>
-    </div>
-    <div class="fg3">
-      <div class="fr">
-        <label>Your cost ($)</label>
-        <input type="number" id="s-cost" placeholder="500" min="0" step="0.01" oninput="calcSingleModal()">
-        <div class="hint">What you paid</div>
-      </div>
-      <div class="fr">
-        <label>Comp price ($)</label>
-        <input type="number" id="s-comp" placeholder="850" min="0" step="0.01" oninput="calcSingleModal()">
-        <div class="hint">Recent market comp</div>
-      </div>
-      <div class="fr">
-        <label>Sale price ($)</label>
-        <input type="number" id="s-sale" placeholder="auto" min="0" step="0.01" oninput="calcSingleModal()">
-        <div class="hint">Leave blank to auto-set</div>
-      </div>
-    </div>
-    <div class="preview-box" id="single-preview"></div>
-    <div class="fr"><label>Notes (optional)</label><textarea id="s-notes" rows="2" placeholder="Any notes about this card…"></textarea></div>
-    <div class="mf">
-      <button class="btn" onclick="closeSingleModal()">Cancel</button>
-      <button class="btn primary" onclick="saveSingle()">Save card</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ SELL SINGLE MODAL ══ -->
-<div class="mo" id="sell-single-modal" onclick="if(event.target===this)closeSSModal()">
-  <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-title" id="sell-single-title">Record single sale</div>
-    <div class="fr"><label>Actual sale price ($)</label><input type="number" id="ss-price" min="0" step="0.01" oninput="updateSSPreview()"></div>
-    <div class="preview-box" id="ss-preview" style="display:block;"></div>
-    <div class="mf">
-      <button class="btn" onclick="closeSSModal()">Cancel</button>
-      <button class="btn primary" onclick="confirmSingleSale()">Record sale</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ API KEY MODAL ══ -->
 <!-- ══ SETTINGS MODAL ══ -->
 <div class="mo" id="settings-modal" onclick="if(event.target===this)closeSettings()">
   <div class="modal" onclick="event.stopPropagation()" style="width:500px;max-width:95vw;">
@@ -635,6 +564,84 @@ tr:hover td{background:#FAFAF7;}
   </div>
 </div>
 
+<!-- ══ SINGLES TRANSACTION MODAL ══ -->
+<div class="mo" id="singles-modal" onclick="if(event.target===this)closeSinglesModal()">
+  <div class="modal" onclick="event.stopPropagation()" style="width:460px;max-width:95vw;">
+    <div class="modal-title" id="singles-modal-title">Log singles transaction</div>
+    <div id="singles-type-indicator" style="display:inline-block;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:20px;"></div>
+    <div class="fr"><label>Description</label><input type="text" id="st-desc" placeholder="e.g. Lot of 50 base cards, Ohtani rookie batch…"></div>
+    <div class="fg">
+      <div class="fr"><label id="st-amount-label">Amount ($)</label><input type="number" id="st-amount" placeholder="0.00" min="0" step="0.01" oninput="calcSinglesPreview()"></div>
+      <div class="fr" id="st-trade-net-row" style="display:none;"><label>Net value (+ gain / - loss)</label><input type="number" id="st-trade-net" placeholder="e.g. -50 or +120" step="0.01" oninput="calcSinglesPreview()"></div>
+    </div>
+    <div class="fr"><label>Notes (optional)</label><input type="text" id="st-notes" placeholder="Any details…"></div>
+    <div class="preview-box" id="singles-preview"></div>
+    <div class="mf">
+      <button class="btn" onclick="closeSinglesModal()">Cancel</button>
+      <button class="btn primary" onclick="saveSinglesTransaction()">Log transaction</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADD CONSIGNOR MODAL ══ -->
+<div class="mo" id="consignor-modal" onclick="if(event.target===this)closeConsignorModal()">
+  <div class="modal" onclick="event.stopPropagation()" style="width:440px;max-width:95vw;">
+    <div class="modal-title" id="consignor-modal-title">Add consignor</div>
+    <div class="fr"><label>Consignor name</label><input type="text" id="c-name" placeholder="e.g. John Smith"></div>
+    <div class="fg">
+      <div class="fr"><label>Your cut (%)</label><input type="number" id="c-cut" placeholder="10" min="0" max="100" step="1" oninput="calcConsignPreview()"><div class="hint" style="font-size:11px;color:var(--text3);margin-top:4px;">You keep this %, pay out the rest</div></div>
+      <div class="fr"><label>Sticker color</label>
+        <select id="c-color">
+          <option value="#EF5350">🔴 Red</option>
+          <option value="#42A5F5">🔵 Blue</option>
+          <option value="#66BB6A">🟢 Green</option>
+          <option value="#FFA726">🟠 Orange</option>
+          <option value="#AB47BC">🟣 Purple</option>
+          <option value="#26C6DA">🩵 Teal</option>
+          <option value="#FFEE58">🟡 Yellow</option>
+          <option value="#FF69B4">🩷 Pink</option>
+          <option value="#8D6E63">🟤 Brown</option>
+          <option value="#78909C">⬜ Gray</option>
+        </select>
+      </div>
+    </div>
+    <div class="fr"><label>Contact / notes (optional)</label><input type="text" id="c-contact" placeholder="Phone, email, or notes"></div>
+    <div class="mf">
+      <button class="btn" onclick="closeConsignorModal()">Cancel</button>
+      <button class="btn primary" onclick="saveConsignor()">Save consignor</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADD CONSIGNMENT ITEM MODAL ══ -->
+<div class="mo" id="consign-item-modal" onclick="if(event.target===this)closeConsignItemModal()">
+  <div class="modal" onclick="event.stopPropagation()" style="width:440px;max-width:95vw;">
+    <div class="modal-title" id="consign-item-title">Add item</div>
+    <div class="fr"><label>Item description</label><input type="text" id="ci-desc" placeholder="e.g. 2018 Topps Chrome Ohtani RC PSA 10"></div>
+    <div class="fg">
+      <div class="fr"><label>Asking price ($)</label><input type="number" id="ci-price" placeholder="0.00" min="0" step="0.01"></div>
+      <div class="fr"><label>Notes (optional)</label><input type="text" id="ci-notes" placeholder="Any details"></div>
+    </div>
+    <div class="mf">
+      <button class="btn" onclick="closeConsignItemModal()">Cancel</button>
+      <button class="btn primary" onclick="saveConsignItem()">Add item</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SELL CONSIGNMENT ITEM MODAL ══ -->
+<div class="mo" id="consign-sell-modal" onclick="if(event.target===this)closeConsignSellModal()">
+  <div class="modal" onclick="event.stopPropagation()" style="width:400px;max-width:95vw;">
+    <div class="modal-title" id="consign-sell-title">Mark as sold</div>
+    <div class="fr"><label>Actual sale price ($)</label><input type="number" id="cs-price" min="0" step="0.01" oninput="calcConsignSellPreview()"></div>
+    <div class="preview-box" id="cs-preview" style="display:block;"></div>
+    <div class="mf">
+      <button class="btn" onclick="closeConsignSellModal()">Cancel</button>
+      <button class="btn primary" onclick="confirmConsignSale()">Mark sold</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ CONFIRM MODAL ══ -->
 <div class="mo" id="confirm-modal" onclick="if(event.target===this)closeConfirm()">
   <div class="modal" onclick="event.stopPropagation()" style="width:380px;max-width:95vw;">
@@ -652,15 +659,15 @@ tr:hover td{background:#FAFAF7;}
 <script>
 // ── STORAGE ───────────────────────────────────────────────────
 const SK='ww_crm_v4';
-let products=[],sales=[],singles=[],breakLogs=[],singlesFilter='all',editingSingleId=null,sellingId=null,editingId=null,purchaseType='case',sellingSSId=null,breakingId=null;
+let products=[],sales=[],singles=[],breakLogs=[],singlesLog=[],consignors=[],singlesFilter='all',editingSingleId=null,sellingId=null,editingId=null,purchaseType='case',sellingSSId=null,breakingId=null,currentSinglesType='buy',editingConsignorId=null,addingItemToConsignorId=null,sellingConsignItemId=null,sellingConsignorId=null;
 
 function save(){
-  try{localStorage.setItem(SK,JSON.stringify({products,sales,singles,breakLogs}));}catch(e){}
+  try{localStorage.setItem(SK,JSON.stringify({products,sales,singles,breakLogs,singlesLog,consignors}));}catch(e){}
   setSyncState('saved');
   cloudSave();
 }
 function load(){
-  try{const d=JSON.parse(localStorage.getItem(SK)||'{}');products=d.products||[];sales=d.sales||[];singles=d.singles||[];breakLogs=d.breakLogs||[];}catch(e){}
+  try{const d=JSON.parse(localStorage.getItem(SK)||'{}');products=d.products||[];sales=d.sales||[];singles=d.singles||[];breakLogs=d.breakLogs||[];singlesLog=d.singlesLog||[];consignors=d.consignors||[];}catch(e){}
   if(!products.length)seed();
 }
 function seed(){
@@ -705,43 +712,279 @@ function suggestSalePrice(cost, comp){
 
 // ── VIEW SWITCH ───────────────────────────────────────────────
 function switchView(v){
-  ['inventory','singles','sales','breaks','ai'].forEach(n=>document.getElementById('view-'+n).classList.toggle('active',n===v));
-  document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',['inventory','singles','sales','breaks','ai'][i]===v));
+  ['inventory','singles','consignments','sales','breaks','ai'].forEach(n=>document.getElementById('view-'+n).classList.toggle('active',n===v));
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',['inventory','singles','consignments','sales','breaks','ai'][i]===v));
   if(v==='sales')renderSales();
   if(v==='breaks')renderBreaks();
   if(v==='ai')renderQL();
-  if(v==='singles'){renderSinglesMetrics();renderSingles();}
+  if(v==='singles'){renderSinglesMetrics();renderSinglesLog();}
+  if(v==='consignments'){renderConsignments();}
 }
 
-function switchSinglesTab(t){
-  ['inventory','trend'].forEach(n=>document.getElementById('sview-'+n).classList.toggle('active',n===t));
-  document.querySelectorAll('.stab').forEach((b,i)=>b.classList.toggle('active',['inventory','trend'][i]===t));
-}
-
-// ── METRICS ───────────────────────────────────────────────────
-function renderMetrics(){
-  const tC=products.reduce((s,p)=>s+totalCostIn(p),0);
-  const tR=products.reduce((s,p)=>s+p.salePrice*avail(p),0);
-  const tRev=sales.filter(s=>s.type!=='single').reduce((s,x)=>s+x.revenue,0);
-  const tP=sales.filter(s=>s.type!=='single').reduce((s,x)=>s+x.profit,0);
-  document.getElementById('metrics-row').innerHTML=`
-    <div class="mc"><div class="mc-label">Inventory cost</div><div class="mc-value">${fm(tC)}</div><div class="mc-sub">${products.length} product lines</div></div>
-    <div class="mc"><div class="mc-label">Retail value available</div><div class="mc-value green">${fm(tR)}</div><div class="mc-sub">At current prices</div></div>
-    <div class="mc"><div class="mc-label">Sales revenue</div><div class="mc-value">${fm(tRev)}</div><div class="mc-sub">${sales.filter(s=>s.type!=='single').length} transactions</div></div>
-    <div class="mc"><div class="mc-label">Total profit</div><div class="mc-value ${tP>=0?'green':'amber'}">${fm(tP)}</div><div class="mc-sub">Boxes only</div></div>`;
-}
-
+// ── SINGLES METRICS ───────────────────────────────────────────
 function renderSinglesMetrics(){
-  const avail_s=singles.filter(s=>!s.sold);
-  const sold_s=singles.filter(s=>s.sold);
-  const totalCostIn_s=singles.reduce((s,c)=>s+c.cost,0);
-  const totalRetail=avail_s.reduce((s,c)=>s+c.salePrice,0);
-  const totalProfit=sold_s.reduce((s,c)=>s+(c.soldPrice-c.cost),0);
+  const totalBuys=singlesLog.filter(s=>s.type==='buy').reduce((a,s)=>a+s.amount,0);
+  const totalSells=singlesLog.filter(s=>s.type==='sell').reduce((a,s)=>a+s.amount,0);
+  const totalTrades=singlesLog.filter(s=>s.type==='trade').reduce((a,s)=>a+s.netValue,0);
+  const netPL=totalSells-totalBuys+totalTrades;
   document.getElementById('singles-metrics').innerHTML=`
-    <div class="mc"><div class="mc-label">Cards in stock</div><div class="mc-value gold">${avail_s.length}</div><div class="mc-sub">${singles.length} total added</div></div>
-    <div class="mc"><div class="mc-label">Total cost basis</div><div class="mc-value">${fm(totalCostIn_s)}</div><div class="mc-sub">All cards</div></div>
-    <div class="mc"><div class="mc-label">Ask price value</div><div class="mc-value green">${fm(totalRetail)}</div><div class="mc-sub">Available cards</div></div>
-    <div class="mc"><div class="mc-label">Realized profit</div><div class="mc-value ${totalProfit>=0?'green':'amber'}">${fm(totalProfit)}</div><div class="mc-sub">${sold_s.length} cards sold</div></div>`;
+    <div class="mc"><div class="mc-label">Total bought</div><div class="mc-value pn">${fm(totalBuys)}</div><div class="mc-sub">${singlesLog.filter(s=>s.type==='buy').length} transactions</div></div>
+    <div class="mc"><div class="mc-label">Total sold</div><div class="mc-value green">${fm(totalSells)}</div><div class="mc-sub">${singlesLog.filter(s=>s.type==='sell').length} transactions</div></div>
+    <div class="mc"><div class="mc-label">Trade net</div><div class="mc-value ${totalTrades>=0?'green':'amber'}">${totalTrades>=0?'+':''}${fm(totalTrades)}</div><div class="mc-sub">${singlesLog.filter(s=>s.type==='trade').length} trades</div></div>
+    <div class="mc"><div class="mc-label">Net P&amp;L</div><div class="mc-value ${netPL>=0?'green':'amber'}">${netPL>=0?'+':''}${fm(netPL)}</div><div class="mc-sub">Singles overall</div></div>`;
+}
+
+// ── SINGLES LOG ───────────────────────────────────────────────
+function populateSinglesMonthFilter(){
+  const sel=document.getElementById('singles-month-filter');if(!sel)return;
+  const cur=sel.value;
+  const months=[...new Set(singlesLog.map(s=>{const d=new Date(s.date);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}))].sort((a,b)=>b.localeCompare(a));
+  sel.innerHTML='<option value="all">All time</option>'+months.map(m=>{const[yr,mo]=m.split('-');const label=new Date(yr,mo-1,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});return `<option value="${m}" ${cur===m?'selected':''}>${label}</option>`;}).join('');
+}
+function getFilteredSinglesLog(){
+  const sel=document.getElementById('singles-month-filter');
+  if(!sel||sel.value==='all') return singlesLog;
+  const v=sel.value;
+  return singlesLog.filter(s=>{const d=new Date(s.date);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`===v;});
+}
+function toggleSelectAllSinglesLog(cb){document.querySelectorAll('.sl-cb').forEach(c=>c.checked=cb.checked);updateSinglesLogDeleteBtn();}
+function updateSinglesLogDeleteBtn(){
+  const n=document.querySelectorAll('.sl-cb:checked').length;
+  const btn=document.getElementById('delete-singles-log-btn');
+  if(btn){btn.style.display=n>0?'':'none';if(n>0)btn.textContent=`Delete selected (${n})`;}
+}
+function deleteSelectedSinglesLog(){
+  const ids=[...document.querySelectorAll('.sl-cb:checked')].map(c=>Number(c.dataset.id));
+  if(!ids.length)return;
+  showConfirm(`Delete ${ids.length} transaction${ids.length>1?'s':''}?`,'This removes the selected singles log entries.',()=>{
+    singlesLog=singlesLog.filter(s=>!ids.includes(s.id));
+    save();renderSinglesMetrics();renderSinglesLog();showToast('Deleted.');
+  });
+}
+function renderSinglesLog(){
+  populateSinglesMonthFilter();
+  const filtered=getFilteredSinglesLog();
+  const body=document.getElementById('singles-log-body'),empty=document.getElementById('empty-singles-log');
+  const cb=document.getElementById('singles-log-all-cb');if(cb)cb.checked=false;
+  document.getElementById('delete-singles-log-btn').style.display='none';
+  if(!filtered.length){body.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  const typeCfg={buy:{label:'Buy',cls:'sbadge-buy'},sell:{label:'Sell',cls:'sbadge-sell'},trade:{label:'Trade',cls:'sbadge-trade'}};
+  body.innerHTML=[...filtered].sort((a,b)=>b.date-a.date).map(s=>{
+    const d=new Date(s.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const cfg=typeCfg[s.type]||typeCfg.buy;
+    const amtStr=s.type==='trade'?(s.netValue>=0?'+':'')+fmd(s.netValue):fmd(s.amount);
+    const plStr=s.type==='buy'?fmd(-s.amount):s.type==='sell'?fmd(s.amount):fmd(s.netValue);
+    const plCls=s.type==='buy'?'pn':'pp';
+    return `<tr>
+      <td><input type="checkbox" class="sl-cb" data-id="${s.id}" onchange="updateSinglesLogDeleteBtn()" style="cursor:pointer;"></td>
+      <td style="color:var(--text2);font-size:12px;">${d}</td>
+      <td><span class="badge ${cfg.cls}">${cfg.label}</span></td>
+      <td style="font-weight:500;">${s.desc}</td>
+      <td class="mono">${amtStr}</td>
+      <td class="mono ${plCls}">${plStr}</td>
+      <td style="color:var(--text2);font-size:12px;">${s.notes||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── SINGLES MODAL ─────────────────────────────────────────────
+function openSinglesModal(type){
+  currentSinglesType=type;
+  const titles={buy:'Log singles buy',sell:'Log singles sale',trade:'Log singles trade'};
+  const colors={buy:'var(--green-bg)',sell:'var(--blue-bg)',trade:'var(--purple-bg)'};
+  const textColors={buy:'var(--green-t)',sell:'var(--blue-t)',trade:'var(--purple-t)'};
+  document.getElementById('singles-modal-title').textContent=titles[type];
+  const ind=document.getElementById('singles-type-indicator');
+  ind.textContent=type.toUpperCase();ind.style.background=colors[type];ind.style.color=textColors[type];
+  ['st-desc','st-amount','st-trade-net','st-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('st-amount-label').textContent=type==='buy'?'Amount paid ($)':type==='sell'?'Amount received ($)':'Value given ($)';
+  document.getElementById('st-trade-net-row').style.display=type==='trade'?'':'none';
+  document.getElementById('singles-preview').style.display='none';
+  document.getElementById('singles-modal').classList.add('open');
+}
+function closeSinglesModal(){document.getElementById('singles-modal').classList.remove('open');}
+function calcSinglesPreview(){
+  const amount=parseFloat(document.getElementById('st-amount').value)||0;
+  const netVal=parseFloat(document.getElementById('st-trade-net').value)||0;
+  const prev=document.getElementById('singles-preview');
+  if(amount>0||netVal!==0){
+    prev.style.display='block';
+    if(currentSinglesType==='buy'){prev.style.color='var(--red)';prev.innerHTML=`Cost: <strong>${fm(amount)}</strong> &nbsp;·&nbsp; P&L impact: <strong>-${fm(amount)}</strong>`;}
+    else if(currentSinglesType==='sell'){prev.style.color='var(--green)';prev.innerHTML=`Revenue: <strong>${fm(amount)}</strong> &nbsp;·&nbsp; P&L impact: <strong>+${fm(amount)}</strong>`;}
+    else{prev.style.color=netVal>=0?'var(--green)':'var(--red)';prev.innerHTML=`Net P&L: <strong>${netVal>=0?'+':''}${fm(netVal)}</strong>`;}
+  } else prev.style.display='none';
+}
+function saveSinglesTransaction(){
+  const desc=document.getElementById('st-desc').value.trim();
+  if(!desc){showToast('Enter a description.');return;}
+  const amount=parseFloat(document.getElementById('st-amount').value)||0;
+  const netVal=parseFloat(document.getElementById('st-trade-net').value)||0;
+  if(currentSinglesType!=='trade'&&!amount){showToast('Enter an amount.');return;}
+  const entry={id:Date.now(),date:Date.now(),type:currentSinglesType,desc,amount:amount||0,netValue:netVal,notes:document.getElementById('st-notes').value.trim()};
+  singlesLog.push(entry);
+  // Also push to main sales log for P&L
+  const plVal=currentSinglesType==='buy'?-amount:currentSinglesType==='sell'?amount:netVal;
+  sales.push({id:Date.now()+1,date:Date.now(),type:'singles-'+currentSinglesType,productName:'Singles — '+desc,productId:entry.id,qty:1,pricePerBox:amount||Math.abs(netVal),revenue:currentSinglesType==='sell'?amount:(currentSinglesType==='trade'&&netVal>0?netVal:0),cost:currentSinglesType==='buy'?amount:(currentSinglesType==='trade'&&netVal<0?Math.abs(netVal):0),profit:plVal});
+  save();closeSinglesModal();renderSinglesMetrics();renderSinglesLog();
+  showToast('Transaction logged!');
+}
+
+// ── CONSIGNMENTS ──────────────────────────────────────────────
+function openConsignorModal(id){
+  editingConsignorId=id||null;
+  const c=id?consignors.find(x=>x.id===id):null;
+  document.getElementById('consignor-modal-title').textContent=c?'Edit consignor':'Add consignor';
+  document.getElementById('c-name').value=c?c.name:'';
+  document.getElementById('c-cut').value=c?c.cut:'10';
+  document.getElementById('c-color').value=c?c.color:'#EF5350';
+  document.getElementById('c-contact').value=c?c.contact||'':'';
+  document.getElementById('consignor-modal').classList.add('open');
+}
+function closeConsignorModal(){document.getElementById('consignor-modal').classList.remove('open');}
+function saveConsignor(){
+  const name=document.getElementById('c-name').value.trim();
+  if(!name){showToast('Enter consignor name.');return;}
+  const cut=parseFloat(document.getElementById('c-cut').value)||10;
+  const color=document.getElementById('c-color').value;
+  const contact=document.getElementById('c-contact').value.trim();
+  if(editingConsignorId){
+    const idx=consignors.findIndex(x=>x.id===editingConsignorId);
+    consignors[idx]={...consignors[idx],name,cut,color,contact};
+  } else {
+    consignors.push({id:Date.now(),name,cut,color,contact,items:[]});
+  }
+  save();closeConsignorModal();renderConsignments();showToast(editingConsignorId?'Consignor updated.':'Consignor added!');
+}
+function deleteConsignor(id){
+  showConfirm('Remove consignor?','This will remove the consignor and all their items.',()=>{
+    consignors=consignors.filter(c=>c.id!==id);save();renderConsignments();showToast('Consignor removed.');
+  });
+}
+
+function openConsignItemModal(consignorId){
+  addingItemToConsignorId=consignorId;
+  const c=consignors.find(x=>x.id===consignorId);
+  document.getElementById('consign-item-title').textContent=`Add item — ${c.name}`;
+  ['ci-desc','ci-price','ci-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('consign-item-modal').classList.add('open');
+}
+function closeConsignItemModal(){document.getElementById('consign-item-modal').classList.remove('open');}
+function saveConsignItem(){
+  const desc=document.getElementById('ci-desc').value.trim();
+  if(!desc){showToast('Enter item description.');return;}
+  const price=parseFloat(document.getElementById('ci-price').value)||0;
+  if(!price){showToast('Enter asking price.');return;}
+  const c=consignors.find(x=>x.id===addingItemToConsignorId);
+  if(!c.items)c.items=[];
+  c.items.push({id:Date.now(),desc,price,notes:document.getElementById('ci-notes').value.trim(),sold:false,soldPrice:null,soldDate:null});
+  save();closeConsignItemModal();renderConsignments();showToast('Item added!');
+}
+function deleteConsignItem(consignorId,itemId){
+  showConfirm('Remove item?','This removes the item from this consignor.',()=>{
+    const c=consignors.find(x=>x.id===consignorId);
+    c.items=c.items.filter(i=>i.id!==itemId);
+    save();renderConsignments();showToast('Item removed.');
+  });
+}
+
+function openConsignSellModal(consignorId,itemId){
+  sellingConsignorId=consignorId;sellingConsignItemId=itemId;
+  const c=consignors.find(x=>x.id===consignorId);
+  const item=c.items.find(i=>i.id===itemId);
+  document.getElementById('consign-sell-title').textContent=`Mark sold — ${item.desc}`;
+  document.getElementById('cs-price').value=item.price;
+  calcConsignSellPreview();
+  document.getElementById('consign-sell-modal').classList.add('open');
+}
+function closeConsignSellModal(){document.getElementById('consign-sell-modal').classList.remove('open');}
+function calcConsignSellPreview(){
+  const c=consignors.find(x=>x.id===sellingConsignorId);if(!c)return;
+  const sp=parseFloat(document.getElementById('cs-price').value)||0;
+  const ourCut=sp*(c.cut/100);
+  const theirCut=sp-ourCut;
+  const prev=document.getElementById('cs-preview');
+  prev.style.display='block';prev.style.color='var(--green)';
+  prev.innerHTML=`Sale: <strong>${fm(sp)}</strong> &nbsp;·&nbsp; Your cut (${c.cut}%): <strong>${fm(ourCut)}</strong> &nbsp;·&nbsp; Owe consignor: <strong style="color:var(--red-t)">${fm(theirCut)}</strong>`;
+}
+function confirmConsignSale(){
+  const c=consignors.find(x=>x.id===sellingConsignorId);
+  const item=c.items.find(i=>i.id===sellingConsignItemId);
+  const sp=parseFloat(document.getElementById('cs-price').value)||0;
+  if(!sp){showToast('Enter sale price.');return;}
+  item.sold=true;item.soldPrice=sp;item.soldDate=Date.now();
+  const ourCut=sp*(c.cut/100);
+  sales.push({id:Date.now(),date:Date.now(),type:'consignment',productName:`Consign [${c.name}] — ${item.desc}`,productId:item.id,qty:1,pricePerBox:sp,revenue:ourCut,cost:0,profit:ourCut});
+  save();closeConsignSellModal();renderConsignments();showToast(`Sold! You keep ${fm(ourCut)}, owe ${c.name} ${fm(sp-ourCut)}`);
+}
+
+function renderConsignments(){
+  const grid=document.getElementById('consign-grid'),empty=document.getElementById('empty-consign');
+  if(!consignors.length){grid.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  // Consignment metrics
+  const allItems=consignors.flatMap(c=>c.items||[]);
+  const soldItems=allItems.filter(i=>i.sold);
+  const availItems=allItems.filter(i=>!i.sold);
+  const totalOwed=consignors.reduce((sum,c)=>{
+    return sum+(c.items||[]).filter(i=>i.sold).reduce((s,i)=>s+i.soldPrice*(1-c.cut/100),0);
+  },0);
+  const ourRevenue=consignors.reduce((sum,c)=>{
+    return sum+(c.items||[]).filter(i=>i.sold).reduce((s,i)=>s+i.soldPrice*(c.cut/100),0);
+  },0);
+  document.getElementById('consign-metrics').innerHTML=`
+    <div class="mc"><div class="mc-label">Consignors</div><div class="mc-value">${consignors.length}</div><div class="mc-sub">${allItems.length} total items</div></div>
+    <div class="mc"><div class="mc-label">Available items</div><div class="mc-value gold">${availItems.length}</div><div class="mc-sub">Ask value: ${fm(availItems.reduce((s,i)=>s+i.price,0))}</div></div>
+    <div class="mc"><div class="mc-label">Our revenue</div><div class="mc-value green">${fm(ourRevenue)}</div><div class="mc-sub">${soldItems.length} items sold</div></div>
+    <div class="mc"><div class="mc-label">Owed to consignors</div><div class="mc-value amber">${fm(totalOwed)}</div><div class="mc-sub">Unpaid payouts</div></div>`;
+  grid.innerHTML=consignors.map(c=>{
+    const items=c.items||[];
+    const sold=items.filter(i=>i.sold);
+    const avail=items.filter(i=>!i.sold);
+    const owed=sold.reduce((s,i)=>s+i.soldPrice*(1-(c.cut/100)),0);
+    const ourEarned=sold.reduce((s,i)=>s+i.soldPrice*(c.cut/100),0);
+    return `<div class="consignor-block">
+      <div class="consignor-header">
+        <div class="color-dot" style="background:${c.color};"></div>
+        <div>
+          <div class="consignor-name">${c.name}</div>
+          <div class="consignor-meta">${c.cut}% your cut · ${c.contact||'No contact info'}</div>
+        </div>
+        <div class="consignor-stats">
+          <div class="cstat"><div class="cstat-label">Items</div><div class="cstat-val">${avail.length} avail / ${sold.length} sold</div></div>
+          <div class="cstat"><div class="cstat-label">Our earnings</div><div class="cstat-val pp">${fm(ourEarned)}</div></div>
+          <div class="cstat"><div class="cstat-label">Owe them</div><div class="cstat-val" style="color:var(--amber-t);">${fm(owed)}</div></div>
+        </div>
+        <div class="ar" style="margin-left:12px;">
+          <button class="btn sm primary" onclick="openConsignItemModal(${c.id})">+ Item</button>
+          <button class="btn sm" onclick="openConsignorModal(${c.id})">Edit</button>
+          <button class="btn sm danger" onclick="deleteConsignor(${c.id})">✕</button>
+        </div>
+      </div>
+      ${items.length?`<table class="consign-items-table">
+        <thead><tr><th>Item</th><th>Ask price</th><th>Status</th><th>Sold for</th><th>Owe consignor</th><th>Notes</th><th></th></tr></thead>
+        <tbody>${items.map(i=>{
+          const owed=i.sold?fmd(i.soldPrice*(1-c.cut/100)):'—';
+          return `<tr style="${i.sold?'opacity:.65':''}">
+            <td style="font-weight:500;"><span class="color-swatch" style="background:${c.color};"></span>${i.desc}</td>
+            <td class="mono">${fmd(i.price)}</td>
+            <td>${i.sold?'<span class="item-sold-badge">Sold</span>':'<span class="badge in-stock">Available</span>'}</td>
+            <td class="mono ${i.sold?'pp':''}">${i.sold?fmd(i.soldPrice):'—'}</td>
+            <td class="mono" style="color:var(--amber-t);">${owed}</td>
+            <td style="color:var(--text3);font-size:12px;">${i.notes||'—'}</td>
+            <td><div class="ar">
+              ${!i.sold?`<button class="btn sm sold-btn" onclick="openConsignSellModal(${c.id},${i.id})">Mark sold</button>`:''}
+              <button class="btn sm danger" onclick="deleteConsignItem(${c.id},${i.id})">✕</button>
+            </div></td>
+          </tr>`;}).join('')}
+        </tbody>
+      </table>`:`<div style="padding:20px;text-align:center;color:var(--text3);font-size:13px;">No items yet — click + Item to add.</div>`}
+      <div class="consign-footer">
+        <div style="font-size:12px;color:var(--text3);">Sticker color: <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${c.color};vertical-align:middle;margin-left:4px;"></span></div>
+        ${owed>0?`<div style="font-size:12px;font-weight:600;color:var(--amber-t);">💰 Payout due: ${fm(owed)}</div>`:'<div style="font-size:12px;color:var(--text3);">No pending payout</div>'}
+      </div>
+    </div>`;
+  }).join('');
 }
 
 // ── INVENTORY TABLE ───────────────────────────────────────────
@@ -783,169 +1026,6 @@ function renderTable(){
       </div></td>
     </tr>`;
   }).join('');
-}
-
-// ── SINGLES RENDER ────────────────────────────────────────────
-function setSingleFilter(f){
-  singlesFilter=f;
-  ['all','available','sold'].forEach(x=>document.getElementById('sf-'+x).classList.toggle('primary',x===f));
-  renderSingles();
-}
-
-function renderSingles(){
-  const q=(document.getElementById('singles-search').value||'').toLowerCase();
-  let list=singles.filter(c=>(c.player+c.desc+c.year+c.team+c.sport).toLowerCase().includes(q));
-  if(singlesFilter==='available') list=list.filter(c=>!c.sold);
-  if(singlesFilter==='sold') list=list.filter(c=>c.sold);
-  list=list.sort((a,b)=>b.salePrice-a.salePrice);
-  const grid=document.getElementById('singles-grid'),empty=document.getElementById('empty-singles');
-  if(!list.length){grid.innerHTML='';empty.style.display='block';grid.style.display='none';return;}
-  empty.style.display='none';grid.style.display='grid';
-  grid.innerHTML=list.map(c=>{
-    const prof=c.salePrice-c.cost;
-    const profPct=c.cost>0?(prof/c.cost*100):0;
-    const compDiff=c.comp>0?((c.salePrice-c.comp)/c.comp*100):0;
-    const marginCls=prof>=0?'':'neg';
-    const gradeStr=c.grade?`<span class="badge" style="background:var(--purple-bg);color:var(--purple-t);font-size:10px;">${c.grade}</span>`:'';
-    const soldRibbon=c.sold?`<div class="sc-sold-ribbon">Sold ${c.soldPrice?'· '+fm(c.soldPrice):''}</div>`:'';
-    return `<div class="sc-card ${c.sold?'is-sold':''}">
-      ${soldRibbon}
-      <div class="sc-player">${c.player}</div>
-      <div class="sc-desc">${c.year} · ${c.desc} ${gradeStr}</div>
-      <div class="sc-prices">
-        <div class="sc-price-cell">
-          <div class="sc-price-label">My cost</div>
-          <div class="sc-price-val cost">${fm(c.cost)}</div>
-        </div>
-        <div class="sc-price-cell">
-          <div class="sc-price-label">Comp</div>
-          <div class="sc-price-val comp">${c.comp?fm(c.comp):'—'}</div>
-        </div>
-        <div class="sc-price-cell">
-          <div class="sc-price-label">Ask price</div>
-          <div class="sc-price-val sale">${fm(c.salePrice)}</div>
-        </div>
-      </div>
-      <div class="sc-margin ${marginCls}">
-        Profit: <strong>${fmd(prof)}</strong> &nbsp;·&nbsp; <strong>${profPct.toFixed(0)}% ROI</strong>
-        ${c.comp?` &nbsp;·&nbsp; <span style="font-size:11px;color:var(--text3);">${compDiff>=0?'':''}${compDiff.toFixed(0)}% vs comp</span>`:''}
-      </div>
-      <div class="sc-footer">
-        <div class="sc-meta">${c.sport}${c.team?' · '+c.team:''}${c.notes?` · <em>${c.notes}</em>`:''}</div>
-        <div class="sc-actions">
-          ${!c.sold?`<button class="btn sm sold-btn" onclick="openSSModal(${c.id})">Mark sold</button>`:''}
-          <button class="btn sm" onclick="openEditSingle(${c.id})">Edit</button>
-          <button class="btn sm danger" onclick="delSingle(${c.id})">✕</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-// ── SINGLE MODAL ──────────────────────────────────────────────
-function openSingleModal(){
-  editingSingleId=null;
-  document.getElementById('single-modal-title').textContent='Add big single';
-  ['s-player','s-year','s-desc','s-team','s-cost','s-comp','s-sale','s-notes'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('s-sport').value='Baseball';
-  document.getElementById('s-grade').value='';
-  document.getElementById('single-preview').style.display='none';
-  document.getElementById('single-modal').classList.add('open');
-}
-function openEditSingle(id){
-  editingSingleId=id;
-  const c=singles.find(x=>x.id===id);
-  document.getElementById('single-modal-title').textContent='Edit card';
-  document.getElementById('s-player').value=c.player;
-  document.getElementById('s-year').value=c.year;
-  document.getElementById('s-desc').value=c.desc;
-  document.getElementById('s-sport').value=c.sport;
-  document.getElementById('s-team').value=c.team||'';
-  document.getElementById('s-grade').value=c.grade||'';
-  document.getElementById('s-cost').value=c.cost;
-  document.getElementById('s-comp').value=c.comp||'';
-  document.getElementById('s-sale').value=c.salePrice;
-  document.getElementById('s-notes').value=c.notes||'';
-  calcSingleModal();
-  document.getElementById('single-modal').classList.add('open');
-}
-function closeSingleModal(){document.getElementById('single-modal').classList.remove('open');}
-
-function calcSingleModal(){
-  const cost=parseFloat(document.getElementById('s-cost').value)||0;
-  const comp=parseFloat(document.getElementById('s-comp').value)||0;
-  const manualSale=parseFloat(document.getElementById('s-sale').value)||0;
-  const suggested=suggestSalePrice(cost,comp);
-  const saleUsed=manualSale||suggested;
-  const prev=document.getElementById('single-preview');
-  if(cost>0||comp>0){
-    prev.style.display='block';
-    const prof=saleUsed-cost;
-    const roi=cost>0?(prof/cost*100):0;
-    const vsComp=comp>0?((saleUsed-comp)/comp*100):null;
-    prev.style.color=prof>=0?'var(--green)':'var(--red)';
-    let html=`Suggested ask: <strong>${fm(suggested)}</strong> &nbsp;·&nbsp; Profit: <strong>${fmd(prof)}</strong> &nbsp;·&nbsp; ROI: <strong>${roi.toFixed(0)}%</strong>`;
-    if(vsComp!==null) html+=` &nbsp;·&nbsp; <span style="font-size:12px;color:var(--text3);">${vsComp.toFixed(0)}% vs comp</span>`;
-    prev.innerHTML=html;
-  } else prev.style.display='none';
-}
-
-function saveSingle(){
-  const player=document.getElementById('s-player').value.trim();
-  const desc=document.getElementById('s-desc').value.trim();
-  if(!player||!desc){showToast('Player name and card description required.');return;}
-  const cost=parseFloat(document.getElementById('s-cost').value)||0;
-  if(!cost){showToast('Enter your cost for this card.');return;}
-  const comp=parseFloat(document.getElementById('s-comp').value)||0;
-  const manualSale=parseFloat(document.getElementById('s-sale').value)||0;
-  const salePrice=manualSale||suggestSalePrice(cost,comp);
-  const card={
-    player,desc,
-    year:document.getElementById('s-year').value||'',
-    sport:document.getElementById('s-sport').value,
-    team:document.getElementById('s-team').value||'',
-    grade:document.getElementById('s-grade').value||'',
-    cost,comp,salePrice,
-    notes:document.getElementById('s-notes').value||'',
-  };
-  if(editingSingleId){
-    const idx=singles.findIndex(x=>x.id===editingSingleId);
-    singles[idx]={...singles[idx],...card};
-  } else {
-    singles.push({id:Date.now(),addedDate:Date.now(),sold:false,...card});
-  }
-  save();closeSingleModal();renderSinglesMetrics();renderSingles();
-  showToast(editingSingleId?'Card updated.':'Card added!');
-}
-function delSingle(id){showConfirm('Remove card?','This will permanently delete this single from your inventory.',()=>{singles=singles.filter(c=>c.id!==id);save();renderSinglesMetrics();renderSingles();showToast('Card removed.');});}
-
-// ── SELL SINGLE MODAL ─────────────────────────────────────────
-function openSSModal(id){
-  sellingSSId=id;
-  const c=singles.find(x=>x.id===id);
-  document.getElementById('sell-single-title').textContent='Sold — '+c.player+' '+c.desc;
-  document.getElementById('ss-price').value=c.salePrice;
-  updateSSPreview();
-  document.getElementById('sell-single-modal').classList.add('open');
-}
-function closeSSModal(){document.getElementById('sell-single-modal').classList.remove('open');}
-function updateSSPreview(){
-  const c=singles.find(x=>x.id===sellingSSId);if(!c)return;
-  const sp=parseFloat(document.getElementById('ss-price').value)||0;
-  const prof=sp-c.cost;
-  const prev=document.getElementById('ss-preview');
-  prev.style.display='block';prev.style.color=prof>=0?'var(--green)':'var(--red)';
-  prev.innerHTML=`Revenue: <strong>${fm(sp)}</strong> &nbsp; Cost: <strong>${fm(c.cost)}</strong> &nbsp; Profit: <strong>${fmd(prof)}</strong> &nbsp; ROI: <strong>${c.cost>0?(prof/c.cost*100).toFixed(0):0}%</strong>`;
-}
-function confirmSingleSale(){
-  const c=singles.find(x=>x.id===sellingSSId);
-  const sp=parseFloat(document.getElementById('ss-price').value)||0;
-  if(!sp){showToast('Enter sale price.');return;}
-  c.sold=true;c.soldPrice=sp;c.soldDate=Date.now();
-  const prof=sp-c.cost;
-  sales.push({id:Date.now(),date:Date.now(),type:'single',productName:c.player+' — '+c.desc,productId:c.id,qty:1,pricePerBox:sp,revenue:sp,cost:c.cost,profit:prof});
-  save();closeSSModal();renderSinglesMetrics();renderSingles();
-  showToast(`Sold ${c.player} for ${fm(sp)} · Profit: ${fmd(prof)}`);
 }
 
 // ── SALES LOG ─────────────────────────────────────────────────
@@ -1018,7 +1098,7 @@ function deleteSelectedSales(){
         }
       });
       sales=sales.filter(s=>!ids.includes(s.id));
-      save();renderAll();renderSales();renderSinglesMetrics();renderSingles();
+      save();renderAll();renderSales();renderSinglesMetrics();renderSinglesLog();
       showToast(`${ids.length} sale${ids.length>1?'s':''} deleted.`);
     }
   );
@@ -1424,6 +1504,17 @@ Include 4-8 recent sales. Today: ${today}.`;
 
 // ── UTILS ─────────────────────────────────────────────────────
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
+function renderMetrics(){
+  const tC=products.reduce((s,p)=>s+totalCostIn(p),0);
+  const tR=products.reduce((s,p)=>s+p.salePrice*avail(p),0);
+  const tRev=sales.filter(s=>s.type==='box').reduce((s,x)=>s+x.revenue,0);
+  const tP=sales.reduce((s,x)=>s+x.profit,0);
+  document.getElementById('metrics-row').innerHTML=`
+    <div class="mc"><div class="mc-label">Inventory cost</div><div class="mc-value">${fm(tC)}</div><div class="mc-sub">${products.length} product lines</div></div>
+    <div class="mc"><div class="mc-label">Retail value available</div><div class="mc-value green">${fm(tR)}</div><div class="mc-sub">At current prices</div></div>
+    <div class="mc"><div class="mc-label">Box sales revenue</div><div class="mc-value">${fm(tRev)}</div><div class="mc-sub">${sales.filter(s=>s.type==='box').length} transactions</div></div>
+    <div class="mc"><div class="mc-label">Total profit (all)</div><div class="mc-value ${tP>=0?'green':'amber'}">${fm(tP)}</div><div class="mc-sub">Boxes + singles + consign</div></div>`;
+}
 function renderAll(){renderMetrics();renderFilters();renderTable();}
 
 // ── API KEY ───────────────────────────────────────────────────
@@ -1459,7 +1550,7 @@ function saveJBSettings(){
         if(rec.singles) singles=rec.singles;
         if(rec.breakLogs) breakLogs=rec.breakLogs;
         renderAll();
-        if(document.getElementById('view-singles').classList.contains('active')){renderSinglesMetrics();renderSingles();}
+        if(document.getElementById('view-singles').classList.contains('active')){renderSinglesMetrics();renderSinglesLog();}
         showToast('Cloud data loaded!');
       } else {
         status.style.color='var(--red)';status.textContent='Could not connect — check your keys.';
@@ -1495,7 +1586,7 @@ async function cloudSave(){
     await fetch(`https://api.jsonbin.io/v3/b/${bin}`,{
       method:'PUT',
       headers:{'Content-Type':'application/json','X-Master-Key':key},
-      body:JSON.stringify({products,sales,singles,breakLogs})
+      body:JSON.stringify({products,sales,singles,breakLogs,singlesLog,consignors})
     });
     setSyncState('saved');
   }catch(e){setSyncState('error');}
@@ -1513,6 +1604,8 @@ async function cloudLoad(){
       if(d.record.sales) sales=d.record.sales;
       if(d.record.singles) singles=d.record.singles;
       if(d.record.breakLogs) breakLogs=d.record.breakLogs;
+      if(d.record.singlesLog) singlesLog=d.record.singlesLog;
+      if(d.record.consignors) consignors=d.record.consignors;
       return true;
     }
   }catch(e){}
@@ -1542,7 +1635,7 @@ function runConfirm() { const cb = _confirmCb; closeConfirm(); if(cb) cb(); }
 // ── ESC TO CLOSE ─────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
-  ['modal','sell-modal','single-modal','sell-single-modal','confirm-modal','settings-modal','break-modal'].forEach(id => {
+  ['modal','sell-modal','singles-modal','consignor-modal','consign-item-modal','consign-sell-modal','sell-single-modal','confirm-modal','settings-modal','break-modal'].forEach(id => {
     document.getElementById(id).classList.remove('open');
   });
   _confirmCb = null;
@@ -1569,7 +1662,7 @@ function initApp(){
   load();renderAll();
   updateSettingsBtn();
   cloudLoad().then(loaded=>{
-    if(loaded){renderAll();if(document.getElementById('view-singles').classList.contains('active')){renderSinglesMetrics();renderSingles();}}
+    if(loaded){renderAll();if(document.getElementById('view-singles').classList.contains('active')){renderSinglesMetrics();renderSinglesLog();}}
   });
   setTimeout(()=>{
     const ls=document.getElementById('ls');
