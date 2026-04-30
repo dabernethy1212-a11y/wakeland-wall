@@ -658,7 +658,8 @@ tr:hover td{background:#FAFAF7;}
 
 <script>
 // ── STORAGE ───────────────────────────────────────────────────
-const SK='ww_crm_v4';
+const SK='ww_crm_v4';const DEFAULT_JB_KEY = 'paste-your-api-key-here';
+const DEFAULT_JB_BIN = 'paste-your-bin-id-here';
 let products=[],sales=[],singles=[],breakLogs=[],singlesLog=[],consignors=[],singlesFilter='all',editingSingleId=null,sellingId=null,editingId=null,purchaseType='case',sellingSSId=null,breakingId=null,currentSinglesType='buy',editingConsignorId=null,addingItemToConsignorId=null,sellingConsignItemId=null,sellingConsignorId=null;
 
 function save(){
@@ -1578,8 +1579,8 @@ function updateSettingsBtn(){
 
 // ── JSONBIN SAVE/LOAD ─────────────────────────────────────────
 async function cloudSave(){
-  const key=localStorage.getItem('ww_jb_key');
-  const bin=localStorage.getItem('ww_jb_bin');
+  const key=localStorage.getItem('ww_jb_key')||DEFAULT_JB_KEY;
+  const bin=localStorage.getItem('ww_jb_bin')||DEFAULT_JB_BIN;
   if(!key||!bin) return;
   setSyncState('syncing');
   try{
