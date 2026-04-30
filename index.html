@@ -231,6 +231,30 @@ tr:hover td{background:#FAFAF7;}
 </head>
 <body>
 
+<!-- ══ LOGIN SCREEN ══ -->
+<div id="login-screen" style="position:fixed;inset:0;background:#1C1B18;display:flex;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:0;">
+  <div style="width:340px;max-width:90vw;">
+    <div style="text-align:center;margin-bottom:32px;">
+      <div style="width:48px;height:48px;background:var(--gold);border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <svg width="24" height="24" viewBox="0 0 16 16" fill="none">
+          <rect x="1" y="1" width="9" height="12" rx="1.5" fill="#1C1B18"/>
+          <rect x="4" y="3" width="9" height="12" rx="1.5" fill="#1C1B18" opacity=".45"/>
+          <rect x="2" y="2" width="7" height="10" rx="1" fill="#C89A2E"/>
+        </svg>
+      </div>
+      <div style="font-size:22px;font-weight:600;color:#FFF;font-family:'DM Sans',sans-serif;letter-spacing:-.3px;">Wakeland Wall</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.4);margin-top:4px;font-family:'DM Sans',sans-serif;">Cards &amp; Collectibles · Staff only</div>
+    </div>
+    <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:24px;">
+      <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;font-family:'DM Sans',sans-serif;">Password</div>
+      <input type="password" id="login-input" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"
+        style="width:100%;padding:10px 14px;font-size:14px;font-family:'DM Sans',sans-serif;border:1px solid rgba(255,255,255,.15);border-radius:8px;background:rgba(255,255,255,.08);color:#FFF;outline:none;margin-bottom:12px;">
+      <div id="login-error" style="font-size:12px;color:#FF5252;margin-bottom:10px;display:none;font-family:'DM Sans',sans-serif;">Incorrect password. Try again.</div>
+      <button onclick="doLogin()" style="width:100%;padding:11px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;background:var(--gold);color:#1C1B18;border:none;border-radius:8px;cursor:pointer;">Sign in</button>
+    </div>
+  </div>
+</div>
+
 <div class="ls" id="ls">
   <div class="ls-logo">Wakeland Wall</div>
   <div class="ls-sub">Loading inventory…</div>
@@ -1525,13 +1549,45 @@ document.addEventListener('keydown', e => {
 });
 
 // ── INIT ──────────────────────────────────────────────────────
-load();renderAll();
-updateSettingsBtn();
-// Try loading from cloud on startup
-cloudLoad().then(loaded=>{
-  if(loaded){renderAll();if(document.getElementById('view-singles').classList.contains('active')){renderSinglesMetrics();renderSingles();}}
-});
-setTimeout(()=>{document.getElementById('ls').classList.add('hidden');setTimeout(()=>document.getElementById('ls').remove(),400);},1100);
+// ── LOGIN ─────────────────────────────────────────────────────
+const PASS_HASH = 'wakeland2024'; // Change this to your password
+function doLogin(){
+  const val = document.getElementById('login-input').value;
+  const err = document.getElementById('login-error');
+  if(val === PASS_HASH){
+    sessionStorage.setItem('ww_auth','1');
+    document.getElementById('login-screen').style.display='none';
+    initApp();
+  } else {
+    err.style.display='block';
+    document.getElementById('login-input').value='';
+    document.getElementById('login-input').focus();
+  }
+}
+
+function initApp(){
+  load();renderAll();
+  updateSettingsBtn();
+  cloudLoad().then(loaded=>{
+    if(loaded){renderAll();if(document.getElementById('view-singles').classList.contains('active')){renderSinglesMetrics();renderSingles();}}
+  });
+  setTimeout(()=>{
+    const ls=document.getElementById('ls');
+    if(ls){ls.classList.add('hidden');setTimeout(()=>ls.remove(),400);}
+  },1100);
+}
+
+// Check if already logged in this session
+if(sessionStorage.getItem('ww_auth')==='1'){
+  document.getElementById('login-screen').style.display='none';
+  initApp();
+} else {
+  // Hide loading screen until login
+  const ls=document.getElementById('ls');
+  if(ls) ls.style.display='none';
+  document.getElementById('login-input').focus();
+}
+
 </script>
 </body>
 </html>
