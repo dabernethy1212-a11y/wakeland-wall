@@ -1125,7 +1125,12 @@ function renderSales(){
   empty.style.display='none';
   body.innerHTML=[...filtered].sort((a,b)=>b.date-a.date).map(s=>{
     const d=new Date(s.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-    const typeBadge=s.type==='single'?'<span class="badge" style="background:var(--purple-bg);color:var(--purple-t);">Single</span>':'<span class="badge case-badge">Box</span>';
+    const t=s.type||'box';
+    const typeBadge=
+      t==='box'?'<span class="badge case-badge">Box</span>':
+      t==='single'||t.startsWith('singles-')?`<span class="badge" style="background:var(--purple-bg);color:var(--purple-t);">Singles${t==='singles-buy'?' · Buy':t==='singles-sell'?' · Sell':t==='singles-trade'?' · Trade':''}</span>`:
+      t==='consignment'?'<span class="badge" style="background:var(--amber-bg);color:var(--amber-t);">Consign</span>':
+      '<span class="badge case-badge">Box</span>';
     return `<tr>
       <td><input type="checkbox" class="sale-cb" data-id="${s.id}" onchange="updateDeleteBtn()" style="cursor:pointer;"></td>
       <td style="color:var(--text2);font-size:12px;">${d}</td>
