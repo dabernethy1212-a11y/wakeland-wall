@@ -667,6 +667,8 @@ tr:hover td{background:#FAFAF7;}
 <script>
 // ── STORAGE ───────────────────────────────────────────────────
 const SK='ww_crm_v4';
+const DEFAULT_JB_KEY='YOUR_API_KEY_HERE';
+const DEFAULT_JB_BIN='69f3acd8856a682189905ce5';
 let products=[],sales=[],singles=[],breakLogs=[],singlesLog=[],consignors=[],consignSales=[],singlesFilter='all',editingSingleId=null,sellingId=null,editingId=null,purchaseType='case',sellingSSId=null,breakingId=null,currentSinglesType='buy',editingConsignorId=null,addingItemToConsignorId=null,sellingConsignItemId=null,sellingConsignorId=null;
 
 function save(){
@@ -1582,9 +1584,9 @@ function updateSettingsBtn(){
 
 // ── JSONBIN SAVE/LOAD ─────────────────────────────────────────
 async function cloudSave(){
-  const key=localStorage.getItem('ww_jb_key');
-  const bin=localStorage.getItem('ww_jb_bin');
-  if(!key||!bin) return;
+  const key=localStorage.getItem('ww_jb_key')||DEFAULT_JB_KEY;
+  const bin=localStorage.getItem('ww_jb_bin')||DEFAULT_JB_BIN;
+  if(!key||!bin||key==='YOUR_API_KEY_HERE') return;
   setSyncState('syncing');
   try{
     await fetch(`https://api.jsonbin.io/v3/b/${bin}`,{
@@ -1597,9 +1599,9 @@ async function cloudSave(){
 }
 
 async function cloudLoad(){
-  const key=localStorage.getItem('ww_jb_key');
-  const bin=localStorage.getItem('ww_jb_bin');
-  if(!key||!bin) return false;
+  const key=localStorage.getItem('ww_jb_key')||DEFAULT_JB_KEY;
+  const bin=localStorage.getItem('ww_jb_bin')||DEFAULT_JB_BIN;
+  if(!key||!bin||key==='YOUR_API_KEY_HERE') return false;
   try{
     const r=await fetch(`https://api.jsonbin.io/v3/b/${bin}/latest`,{headers:{'X-Master-Key':key}});
     const d=await r.json();
